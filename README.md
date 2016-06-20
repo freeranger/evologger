@@ -29,14 +29,14 @@ Evologger supports a "plugin" architecture where you can add new input sources a
 
 #### Available plugins
 #####Inputs
-* Evohome - essential to collect values from your EvoHome system (via the evoclient library)
-* Forecast - Reads the current local temperature from forecast.io at the same time as your room temps are read
+* [Evohome](https://github.com/freeranger/evologger/blob/master/plugins/evohome/readme.md) - essential to collect values from your EvoHome system (via the [evohome-client](https://github.com/watchforstock/evohome-client) library)
+* [Forecast](https://github.com/freeranger/evologger/blob/master/plugins/forecast/readme.md) - Reads the current local temperature from [forecast.io](http://forecast.io/) at the same time as your room temps are read
 
 #####Outputs
-* Csv - write to a csv file so you can generate your own graphs or whatever in Excel
-* InfluxDb - write to this timeseries database so you can then graph in [grafana](https://grafana.net) for example.
-* plotly - write directly to [Plot.ly](http://plot.ly.com) streams for live updating graphs
-* Enoncms - write directly to [emoncms](https://emoncms.org) inputs
+* [Csv](https://github.com/freeranger/evologger/blob/master/plugins/csv/readme.md) - write to a csv file so you can generate your own graphs or whatever in Excel
+* [InfluxDb](https://github.com/freeranger/evologger/blob/master/plugins/influxdb/readme.md) - write to this timeseries database so you can then graph in [grafana](https://grafana.net) for example.
+* [Plot.ly](https://github.com/freeranger/evologger/blob/master/plugins/plotly/readme.md) - write directly to [Plot.ly](http://plot.ly.com) streams for live updating graphs
+* [Emoncms](https://github.com/freeranger/evologger/blob/master/plugins/emoncms/readme.md) - write directly to [emoncms](https://emoncms.org) inputs
 
 See the readme file in each plugin's folder for instructions on any specific configuration required.
 
