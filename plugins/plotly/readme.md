@@ -30,7 +30,7 @@ etc...
 
 ## Setup ##
 Once you have added the username, API Key, and streaming API tokens to your config.ini, you need to initialise the streams for the first time.
-From the evohome-logger folder, run:
+From the evologger folder, run:
 ```
 python plugins/plotly/__init__.py
 ```
