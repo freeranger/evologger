@@ -26,6 +26,7 @@ HotWater=Hot Water      - Name you want to use for the Hot Water "zone" (if you 
 
 ### Plugins
 Evologger supports a "plugin" architecture where you can add new input sources and output destinations simply by adding the plugin to the `plugins` directory and adding any necessary configuration to the `config.ini` file.
+Any plugins you don't want to use, it's probably best to remove their section(s) from the `config.ini` file completely.
 
 #### Available plugins
 #####Inputs
@@ -38,7 +39,7 @@ Evologger supports a "plugin" architecture where you can add new input sources a
 * [Plot.ly](https://github.com/freeranger/evologger/blob/master/plugins/plotly/readme.md) - write directly to [Plot.ly](http://plot.ly.com) streams for live updating graphs
 * [Emoncms](https://github.com/freeranger/evologger/blob/master/plugins/emoncms/readme.md) - write directly to [emoncms](https://emoncms.org) inputs
 
-See the readme file in each plugin's folder for instructions on any specific configuration required.
+See the readme file in each plugin's folder for instructions on any specific configuration or initialisation steps required.
 
 All plugins support the following options in `config.ini`:
 

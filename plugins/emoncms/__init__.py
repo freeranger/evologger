@@ -13,8 +13,9 @@ emon_debug_enabled = is_debugging_enabled('Emoncms')
 emon_write_enabled = not get_boolean_or_default('Emoncms', 'Simulation', False)
 
 emon_api_key = config.get("Emoncms", "apiKey")
+emon_node_number = config.getint("Emoncms", "nodeNumber")
 
-emon_post_url='http://emoncms.org/input/post.json?apikey=' + emon_api_key + '&node=3&json={'
+emon_post_url='http://emoncms.org/input/post.json?apikey=' + emon_api_key + '&node=' + str(emon_node_number) + '&json={'
 
 def write(timestamp, temperatures):
 
@@ -29,7 +30,7 @@ def write(timestamp, temperatures):
         url = '%s%s Actual: %s,' % (url, temperature.zone, str(temperature.actual))
         debug_temperatures += "%s (%s A" % (temperature.zone, temperature.actual)
         if temperature.target is not None:
-            url = '%s%s Target: %s,' % (url, temperature.zone, str(temperature.target))
+            url += ',%s Target: %s,' % (temperature.zone, str(temperature.target))
             debug_temperatures += ", %s T" % temperature.target
 
     url += '}'
@@ -39,7 +40,7 @@ def write(timestamp, temperatures):
 
     if emon_debug_enabled:
         emon_logger.debug(debug_temperatures)
-        emon_logger.debug(url)
+        emon_logger.debug('URL:' + url)
 
     try:
         if emon_write_enabled:
