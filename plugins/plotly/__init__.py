@@ -11,15 +11,22 @@ plugin_type="output"
 
 plotly_logger = logging.getLogger('plotly-plugin:')
 
-config = ConfigParser.SafeConfigParser(allow_no_value=True)
-config.read('config.ini')
+invalidConfig = False
 
-plotly_username = config.get("Plotly", "username")
-plotly_api_key = config.get("Plotly", "apiKey")
-if config.has_option('Plotly', 'maxPointsPerGraph'):
-    ploty_max_points_per_graph = config.getint('Plotly', 'maxPointsPerGraph')
-else:
-    ploty_max_points_per_graph = 288
+try:
+    config = ConfigParser.SafeConfigParser(allow_no_value=True)
+    config.read('config.ini')
+
+    plotly_username = config.get("Plotly", "username")
+    plotly_api_key = config.get("Plotly", "apiKey")
+    if config.has_option('Plotly', 'maxPointsPerGraph'):
+        ploty_max_points_per_graph = config.getint('Plotly', 'maxPointsPerGraph')
+    else:
+        ploty_max_points_per_graph = 288
+
+except Exception, e:
+    plotly_logger.error("Error reading config:\n%s", e)
+    invalidConfig = True
 
 
 def get_zones():
@@ -90,6 +97,11 @@ plotly_writeEnabled = not get_boolean_or_default('Plotly', 'Simulation', False)
 
 def write(timestamp, temperatures):
 
+    if invalidConfig:
+        if plotly_debugEnabled:
+            plotly_logger.debug('Invalid config, aborting write')
+            return []
+
     debug_message = 'Writing to ' + plugin_name
     if not plotly_writeEnabled:
         debug_message += ' [SIMULATED]'
@@ -123,7 +135,7 @@ def write(timestamp, temperatures):
                     plotly_logger.debug("Zone %s does not have a stream id, ignoring")
 
     except Exception, e:
-        plotly_logger.error("\nPlot.ly API error - aborting\n%s", e)
+        plotly_logger.error("Plot.ly API error - aborting write\n%s", e)
 
     if plotly_debugEnabled:
         plotly_logger.debug(debug_text)

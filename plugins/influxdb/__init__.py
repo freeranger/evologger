@@ -7,21 +7,28 @@ plugin_type="output"
 
 influx_logger = logging.getLogger('influx-plugin:')
 
-config = ConfigParser.ConfigParser(allow_no_value=True)
-config.read('config.ini')
+invalidConfig = False
 
-influx_debug_enabled = is_debugging_enabled('InfluxDB')
-influx_write_enabled = not get_boolean_or_default('InfluxDB', 'Simulation', False)
+try:
 
-influx_hostname = config.get("InfluxDB", "hostname")
-influx_port = config.get("InfluxDB", "port")
-influx_database = config.get("InfluxDB", "database")
-influx_username = config.get("InfluxDB", "username")
-influx_password = config.get("InfluxDB", "password")
+    config = ConfigParser.ConfigParser(allow_no_value=True)
+    config.read('config.ini')
 
-if influx_debug_enabled:
-    influx_logger.debug("Influx Host: %s:%s Database: %s", influx_hostname, influx_port, influx_database)
+    influx_debug_enabled = is_debugging_enabled('InfluxDB')
+    influx_write_enabled = not get_boolean_or_default('InfluxDB', 'Simulation', False)
 
+    influx_hostname = config.get("InfluxDB", "hostname")
+    influx_port = config.get("InfluxDB", "port")
+    influx_database = config.get("InfluxDB", "database")
+    influx_username = config.get("InfluxDB", "username")
+    influx_password = config.get("InfluxDB", "password")
+
+    if influx_debug_enabled:
+        influx_logger.debug("Influx Host: %s:%s Database: %s", influx_hostname, influx_port, influx_database)
+
+except Exception, e:
+    influx_logger.error("Error reading config:\n%s", e)
+    invalidConfig = True
 
 def prep_record(time, zone, actual, target):
     record_actual = None
@@ -75,6 +82,11 @@ def prep_record(time, zone, actual, target):
 
 def write(timestamp, temperatures):
 
+    if invalidConfig:
+        if influx_debug_enabled:
+            influx_logger.debug('Invalid config, aborting write')
+            return []
+
     debug_message = 'Writing to ' + plugin_name
     if not influx_write_enabled:
         debug_message += ' [SIMULATED]'
@@ -108,7 +120,7 @@ def write(timestamp, temperatures):
         if influx_write_enabled:
             influx_client.write_points(data)
     except InfluxDBClientError as e:
-        influx_logger.error(e)
+        influx_logger.error("\nInflux DB error - aborting write\n%s", e)
         print str(e)
 
 

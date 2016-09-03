@@ -6,18 +6,31 @@ plugin_type = "output"
 
 emon_logger = logging.getLogger('emoncms-plugin:')
 
-config = ConfigParser.ConfigParser(allow_no_value=True)
-config.read('config.ini')
+invalidConfig = False
 
-emon_debug_enabled = is_debugging_enabled('Emoncms')
-emon_write_enabled = not get_boolean_or_default('Emoncms', 'Simulation', False)
+try:
+    config = ConfigParser.ConfigParser(allow_no_value=True)
+    config.read('config.ini')
 
-emon_api_key = config.get("Emoncms", "apiKey")
-emon_node_number = config.getint("Emoncms", "nodeNumber")
+    emon_debug_enabled = is_debugging_enabled('Emoncms')
+    emon_write_enabled = not get_boolean_or_default('Emoncms', 'Simulation', False)
 
-emon_post_url='http://emoncms.org/input/post.json?apikey=' + emon_api_key + '&node=' + str(emon_node_number) + '&json={'
+    emon_api_key = config.get("Emoncms", "apiKey")
+    emon_node_number = config.getint("Emoncms", "nodeNumber")
+
+    emon_post_url='http://emoncms.org/input/post.json?apikey=' + emon_api_key + '&node=' + str(emon_node_number) + '&json={'
+
+except Exception, e:
+    emon_logger.error("Error reading config:\n%s", e)
+    invalidConfig = True
+
 
 def write(timestamp, temperatures):
+
+    if invalidConfig:
+        if emon_debug_enabled:
+            emon_logger.debug('Invalid config, aborting write')
+            return []
 
     debug_message = 'Writing to ' + plugin_name
     if not emon_write_enabled:
@@ -47,7 +60,7 @@ def write(timestamp, temperatures):
             response = urllib2.urlopen(url)
             emon_logger.debug('response: ' + str(response))
     except Exception, e:
-        emon_logger.exception("\nEmon API error - aborting\n%s", e)
+        emon_logger.exception("Emon API error - aborting write\n%s", e)
 
 
 # if called directly then this is what will execute

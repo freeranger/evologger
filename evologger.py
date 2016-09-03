@@ -25,10 +25,12 @@ def get_temperatures():
             logger.debug('Reading temperatures from %s', plugin.plugin_name)
             try:
                 temps = plugin.read()
+                if not temps:
+                    continue
 
             except Exception, e:
                 logger.error("Error reading temps from %s: $s", plugin.plugin_name, e)
-                return temperatures
+                return []
 
             for t in temps:
                 temperatures.append(t)
@@ -93,22 +95,23 @@ def main(argv):
 
             temperatures = get_temperatures()
 
-            text_temperatures = '%s: ' % datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')
-            for t in temperatures:
-                text_temperatures += "%s (%s A" % (t.zone, t.actual)
-                if t.target is not None:
-                    text_temperatures += ", %s T" % t.target
-                text_temperatures += ') '
+            if temperatures:
+                text_temperatures = '%s: ' % datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')
+                for t in temperatures:
+                    text_temperatures += "%s (%s A" % (t.zone, t.actual)
+                    if t.target is not None:
+                        text_temperatures += ", %s T" % t.target
+                    text_temperatures += ') '
 
-            logger.info(text_temperatures)
+                logger.info(text_temperatures)
 
-            for i in plugins.outputs:
-                plugin = plugins.get(i)
-                logger.debug('Writing temperatures to %s', plugin.plugin_name)
-                try:
-                    plugin.write(timestamp, temperatures)
-                except Exception, e:
-                    logger.error('Error trying to write to %s: %s', plugin.plugin_name, str(e))
+                for i in plugins.outputs:
+                    plugin = plugins.get(i)
+                    logger.debug('Writing temperatures to %s', plugin.plugin_name)
+                    try:
+                        plugin.write(timestamp, temperatures)
+                    except Exception, e:
+                        logger.error('Error trying to write to %s: %s', plugin.plugin_name, str(e))
 
             if polling_interval == 0:
                 continue_polling = False

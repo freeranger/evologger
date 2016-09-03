@@ -7,17 +7,27 @@ plugin_type = "output"
 
 csv_logger = logging.getLogger('csv-plugin:')
 
-config = ConfigParser.ConfigParser(allow_no_value=True)
-config.read('config.ini')
+invalidConfig = False
 
-filename = config.get("Csv", "filename")
+try:
+    config = ConfigParser.ConfigParser(allow_no_value=True)
+    config.read('config.ini')
 
-csv_debug_enabled = is_debugging_enabled('Csv')
+    filename = config.get("Csv", "filename")
 
-csv_write_enabled = not get_boolean_or_default('Csv', 'Simulation', False)
+    csv_debug_enabled = is_debugging_enabled('Csv')
 
+    csv_write_enabled = not get_boolean_or_default('Csv', 'Simulation', False)
+
+except Exception, e:
+    csv_logger.error("Error reading config:\n%s", e)
+    invalidConfig = True
 
 def write(timestamp, temperatures):
+    if invalidConfig:
+        if csv_debug_enabled:
+            csv_logger.debug('Invalid config, aborting write')
+            return []
 
     debug_message = 'Writing to ' + plugin_name
     if not csv_write_enabled:
@@ -33,7 +43,7 @@ def write(timestamp, temperatures):
         try:
             csv_file = open(filename, 'a')
         except Exception, e:
-            csv_logger.error("\nError opening %s for writing - aborting\n%s", filename, e)
+            csv_logger.error("Error opening %s for writing - aborting write\n%s", filename, e)
             return
 
         writer = csv.writer(csv_file, delimiter=',', quoting=csv.QUOTE_MINIMAL)

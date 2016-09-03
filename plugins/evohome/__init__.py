@@ -10,20 +10,27 @@ plugin_type = "input"
 
 evohome_plugin_logger = logging.getLogger('evohome-plugin:')
 
-config = ConfigParser.ConfigParser(allow_no_value=True)
-config.read('config.ini')
+invalidConfig = False
 
-evohome_debug_enabled = is_debugging_enabled('EvoHome')
-evohome_read_enabled = not get_boolean_or_default('EvoHome', 'Simulation', False)
-evohome_http_debug_enabled = get_boolean_or_default('EvoHome', 'httpDebug', False)
-evohome_username = config.get("EvoHome", "username")
-evohome_password = config.get("EvoHome", "password")
-evohome_hotwater = config.get("EvoHome", "HotWater")
+try:
+    config = ConfigParser.ConfigParser(allow_no_value=True)
+    config.read('config.ini')
 
-if config.has_option("EvoHome", "HotWaterSetPoint"):
-    hot_water_setpoint = config.getfloat("EvoHome", "HotWaterSetPoint")
-else:
-    hot_water_setpoint = None
+    evohome_debug_enabled = is_debugging_enabled('EvoHome')
+    evohome_read_enabled = not get_boolean_or_default('EvoHome', 'Simulation', False)
+    evohome_http_debug_enabled = get_boolean_or_default('EvoHome', 'httpDebug', False)
+    evohome_username = config.get("EvoHome", "username")
+    evohome_password = config.get("EvoHome", "password")
+    evohome_hotwater = config.get("EvoHome", "HotWater")
+
+    if config.has_option("EvoHome", "HotWaterSetPoint"):
+        hot_water_setpoint = config.getfloat("EvoHome", "HotWaterSetPoint")
+    else:
+        hot_water_setpoint = None
+
+except Exception, e:
+    evohome_plugin_logger.error("Error reading config:\n%s", e)
+    invalidConfig = True
 
 
 def is_hotwater_on(client):
@@ -39,6 +46,11 @@ def is_hotwater_on(client):
 
 
 def read():
+
+    if invalidConfig:
+        if evohome_debug_enabled:
+            evohome_plugin_logger.debug('Invalid config, aborting read')
+            return []
 
     debug_message = 'Reading from ' + plugin_name
     if not evohome_read_enabled:
@@ -57,8 +69,8 @@ def read():
             if global_debug:
                 logging.getLogger().setLevel(logging.DEBUG)
     except Exception, e:
-        evohome_plugin_logger.error("\nEvoHome API error - aborting\n%s", e)
-        return temperatures
+        evohome_plugin_logger.error("EvoHome API error - aborting read\n%s", e)
+        return []
 
     debug_temperatures = '%s: ' % datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')
 
@@ -68,7 +80,7 @@ def read():
         try:
             zones = client.temperatures()
         except Exception, e:
-            evohome_plugin_logger.error("\nEvoHome API error getting temperatures - aborting\n%s", e)
+            evohome_plugin_logger.error("EvoHome API error getting temperatures - aborting\n%s", e)
             return
 
         for zone in zones:
