@@ -20,7 +20,7 @@ Destinations include "data stores" such as .csv files or influxdb database for f
 debug=<true|false>      - If true then output debugging statements.
 pollingInterval=300     - Frequency in seconds to read temperatures from input plugins and write them to the output plugins.  0 => do once, then exit
                           It is recommended that this is set to no less than 5 minutes as some of the api's used by plugins (e.g. plot.ly) limit the numer of api calls you can make per day.
-Outside=<zone name>     - Name you want to use for your outside "zone" (if you have one) when reading the external temperature - used by some input plugins, e.g. forecast.io
+Outside=<zone name>     - Name you want to use for your outside "zone" (if you have one) when reading the external temperature - used by some input plugins, e.g. darksky.net
 HotWater=Hot Water      - Name you want to use for the Hot Water "zone" (if you have one) when reading the temperature - used by some input plugins, e.g. evohome
 ```
 
@@ -31,7 +31,7 @@ Any plugins you don't want to use, it's probably best to remove their section(s)
 #### Available plugins
 #####Inputs
 * [Evohome](https://github.com/freeranger/evologger/blob/master/plugins/evohome/readme.md) - essential to collect values from your EvoHome system (via the [evohome-client](https://github.com/watchforstock/evohome-client) library)
-* [Forecast](https://github.com/freeranger/evologger/blob/master/plugins/forecast/readme.md) - Reads the current local temperature from [forecast.io](http://forecast.io/) at the same time as your room temps are read
+* [Darksky](https://github.com/freeranger/evologger/blob/master/plugins/darksky/readme.md) - Reads the current local temperature from [darksky.net](http://darksky.net) at the same time as your room temps are read
 
 #####Outputs
 * [Csv](https://github.com/freeranger/evologger/blob/master/plugins/csv/readme.md) - write to a csv file so you can generate your own graphs or whatever in Excel
@@ -58,7 +58,7 @@ debug=<true|false>      - If true then write to the debug log.  If not present t
 Plugins come in two flavours - input plugins and output plugins. 
 Input plugins are sources of temperature data and output plugins are where you record that data.
 
-The simplest way to get started with your own plugin is to look at one of the existing ones - eg. forecast for input or csv for output.
+The simplest way to get started with your own plugin is to look at one of the existing ones - eg. darksky.net for input or csv for output.
 There are a few rules you must follow for your plugin:
 
 * Plugins must be stored beneath the "plugins" folder and have a `__init__.py` file.

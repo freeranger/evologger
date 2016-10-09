@@ -4,10 +4,10 @@ from config_helper import *
 from datetime import datetime
 import random
 
-plugin_name = "forecast.io"
+plugin_name = "darksky.net"
 plugin_type = "input"
 
-forecast_logger = logging.getLogger('forecast-plugin:')
+forecast_logger = logging.getLogger('darksky-plugin:')
 
 invalidConfig = False
 
@@ -15,14 +15,14 @@ try:
     config = ConfigParser.ConfigParser(allow_no_value=True)
     config.read('config.ini')
 
-    forecast_debug_enabled = is_debugging_enabled('Forecast')
-    forecast_read_enabled = not get_boolean_or_default('Forecast', 'Simulation', False)
+    forecast_debug_enabled = is_debugging_enabled('DarkSky')
+    forecast_read_enabled = not get_boolean_or_default('DarkSky', 'Simulation', False)
 
-    forecast_api_key = config.get("Forecast", "apiKey")
-    forecast_latitude = config.getfloat("Forecast", "latitude")
-    forecast_longitude = config.getfloat("Forecast", "longitude")
-    if config.has_option("Forecast", "Outside"):
-        forecast_zone = config.get("Forecast", "Outside")
+    forecast_api_key = config.get("DarkSky", "apiKey")
+    forecast_latitude = config.getfloat("DarkSky", "latitude")
+    forecast_longitude = config.getfloat("DarkSky", "longitude")
+    if config.has_option("DarkSky", "Outside"):
+        forecast_zone = config.get("DarkSky", "Outside")
     else:
         forecast_zone = "Outside"
 
@@ -46,7 +46,7 @@ def read():
         try:
             forecast = forecastio.load_forecast(forecast_api_key, forecast_latitude, forecast_longitude)
         except Exception, e:
-            forecast_logger.error("Forecast API error - aborting read:\n%s", e)
+            forecast_logger.error("DarkSky API error - aborting read:\n%s", e)
             return []
 
         temp = round(forecast.currently().temperature, 1)

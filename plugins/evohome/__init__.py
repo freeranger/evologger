@@ -74,7 +74,6 @@ def read():
 
     debug_temperatures = '%s: ' % datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')
 
-
     if evohome_read_enabled:
 
         try:
