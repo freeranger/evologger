@@ -1,0 +1,73 @@
+{
+  "locationId": "2",
+  "gateways": [
+    {
+      "gatewayId": "54321",
+      "temperatureControlSystems": [
+        {
+          "systemId": "54321",
+          "zones": [
+            {
+              "zoneId": "1990307",
+              "temperatureStatus": {
+                "temperature": 18,
+                "isAvailable": true
+              },
+              "activeFaults": [],
+              "heatSetpointStatus": {
+                "targetTemperature": 5,
+                "setpointMode": "PermanentOverride"
+              },
+              "name": "Office 2"
+            },
+            {
+              "zoneId": "1990306",
+              "temperatureStatus": {
+                "temperature": 19.5,
+                "isAvailable": true
+              },
+              "activeFaults": [],
+              "heatSetpointStatus": {
+                "targetTemperature": 12,
+                "setpointMode": "FollowSchedule"
+              },
+              "name": "Master Bed 2"
+            },
+            {
+              "zoneId": "1990304",
+              "temperatureStatus": {
+                "temperature": 18,
+                "isAvailable": true
+              },
+              "activeFaults": [],
+              "heatSetpointStatus": {
+                "targetTemperature": 17,
+                "setpointMode": "FollowSchedule"
+              },
+              "name": "Kitchen 2"
+            },
+            {
+              "zoneId": "1990303",
+              "temperatureStatus": {
+                "temperature": 21,
+                "isAvailable": true
+              },
+              "activeFaults": [],
+              "heatSetpointStatus": {
+                "targetTemperature": 16,
+                "setpointMode": "FollowSchedule"
+              },
+              "name": "Living Room 2"
+            }
+          ],
+          "activeFaults": [],
+          "systemModeStatus": {
+            "mode": "Auto",
+            "isPermanent": true
+          }
+        }
+      ],
+      "activeFaults": []
+    }
+  ]
+}

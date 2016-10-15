@@ -1,0 +1,11 @@
+{
+  "userId": "123",
+  "username": "testuser@tempuri.org",
+  "firstname": "Test",
+  "lastname": "User",
+  "streetAddress": "10 High Street",
+  "city": "Testville",
+  "postcode": "T3S TY",
+  "country": "UnitedKingdom",
+  "language": "enGB"
+}

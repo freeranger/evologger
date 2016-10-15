@@ -1,0 +1,423 @@
+[
+    {
+        "locationInfo": {
+            "locationId": "1",
+            "name": "London",
+            "streetAddress": "Buckingham Palace",
+            "city": "London",
+            "country": "UnitedKingdom",
+            "postcode": "QU1 33N",
+            "locationType": "Residential",
+            "useDaylightSaveSwitching": true,
+            "timeZone": {
+                "timeZoneId": "GMTStandardTime",
+                "displayName": "(UTC) Dublin, Edinburgh, Lisbon, London",
+                "offsetMinutes": 0,
+                "currentOffsetMinutes": 60,
+                "supportsDaylightSaving": true
+            },
+            "locationOwner": {
+                "userId": "123",
+                "username": "testuser@tempuri.org",
+                "firstname": "Test",
+                "lastname": "User"
+            }
+        },
+        "gateways": [
+            {
+                "gatewayInfo": {
+                    "gatewayId": "12345",
+                    "mac": "00D02D93E003",
+                    "crc": "ECA7",
+                    "isWiFi": false
+                },
+                "temperatureControlSystems": [
+                    {
+                        "systemId": "12345",
+                        "modelType": "EvoTouch",
+                        "zones": [
+                            {
+                                "zoneId": "1808088",
+                                "modelType": "HeatingZone",
+                                "heatSetpointCapabilities": {
+                                    "maxHeatSetpoint": 25,
+                                    "minHeatSetpoint": 5,
+                                    "valueResolution": 0.5,
+                                    "allowedSetpointModes": [
+                                        "PermanentOverride",
+                                        "FollowSchedule",
+                                        "TemporaryOverride"
+                                    ],
+                                    "maxDuration": "1.00:00:00",
+                                    "timingResolution": "00:10:00"
+                                },
+                                "scheduleCapabilities": {
+                                    "maxSwitchpointsPerDay": 6,
+                                    "minSwitchpointsPerDay": 1,
+                                    "timingResolution": "00:10:00",
+                                    "setpointValueResolution": 0.5
+                                },
+                                "name": "Living Room",
+                                "zoneType": "ZoneTemperatureControl"
+                            },
+                            {
+                                "zoneId": "1809610",
+                                "modelType": "HeatingZone",
+                                "heatSetpointCapabilities": {
+                                    "maxHeatSetpoint": 35,
+                                    "minHeatSetpoint": 5,
+                                    "valueResolution": 0.5,
+                                    "allowedSetpointModes": [
+                                        "PermanentOverride",
+                                        "FollowSchedule",
+                                        "TemporaryOverride"
+                                    ],
+                                    "maxDuration": "1.00:00:00",
+                                    "timingResolution": "00:10:00"
+                                },
+                                "scheduleCapabilities": {
+                                    "maxSwitchpointsPerDay": 6,
+                                    "minSwitchpointsPerDay": 1,
+                                    "timingResolution": "00:10:00",
+                                    "setpointValueResolution": 0.5
+                                },
+                                "name": "Spare Bed",
+                                "zoneType": "ZoneTemperatureControl"
+                            },
+                            {
+                                "zoneId": "1809611",
+                                "modelType": "HeatingZone",
+                                "heatSetpointCapabilities": {
+                                    "maxHeatSetpoint": 35,
+                                    "minHeatSetpoint": 5,
+                                    "valueResolution": 0.5,
+                                    "allowedSetpointModes": [
+                                        "PermanentOverride",
+                                        "FollowSchedule",
+                                        "TemporaryOverride"
+                                    ],
+                                    "maxDuration": "1.00:00:00",
+                                    "timingResolution": "00:10:00"
+                                },
+                                "scheduleCapabilities": {
+                                    "maxSwitchpointsPerDay": 6,
+                                    "minSwitchpointsPerDay": 1,
+                                    "timingResolution": "00:10:00",
+                                    "setpointValueResolution": 0.5
+                                },
+                                "name": "Kitchen",
+                                "zoneType": "ZoneTemperatureControl"
+                            },
+                            {
+                                "zoneId": "1809612",
+                                "modelType": "HeatingZone",
+                                "heatSetpointCapabilities": {
+                                    "maxHeatSetpoint": 35,
+                                    "minHeatSetpoint": 5,
+                                    "valueResolution": 0.5,
+                                    "allowedSetpointModes": [
+                                        "PermanentOverride",
+                                        "FollowSchedule",
+                                        "TemporaryOverride"
+                                    ],
+                                    "maxDuration": "1.00:00:00",
+                                    "timingResolution": "00:10:00"
+                                },
+                                "scheduleCapabilities": {
+                                    "maxSwitchpointsPerDay": 6,
+                                    "minSwitchpointsPerDay": 1,
+                                    "timingResolution": "00:10:00",
+                                    "setpointValueResolution": 0.5
+                                },
+                                "name": "Master Bed",
+                                "zoneType": "ZoneTemperatureControl"
+                            },
+                            {
+                                "zoneId": "1809613",
+                                "modelType": "HeatingZone",
+                                "heatSetpointCapabilities": {
+                                    "maxHeatSetpoint": 35,
+                                    "minHeatSetpoint": 5,
+                                    "valueResolution": 0.5,
+                                    "allowedSetpointModes": [
+                                        "PermanentOverride",
+                                        "FollowSchedule",
+                                        "TemporaryOverride"
+                                    ],
+                                    "maxDuration": "1.00:00:00",
+                                    "timingResolution": "00:10:00"
+                                },
+                                "scheduleCapabilities": {
+                                    "maxSwitchpointsPerDay": 6,
+                                    "minSwitchpointsPerDay": 1,
+                                    "timingResolution": "00:10:00",
+                                    "setpointValueResolution": 0.5
+                                },
+                                "name": "Office",
+                                "zoneType": "ZoneTemperatureControl"
+                            }
+                        ],
+                        "dhw": {
+                            "dhwId": "1809741",
+                            "dhwStateCapabilitiesResponse": {
+                                "allowedStates": [
+                                    "On",
+                                    "Off"
+                                ],
+                                "allowedModes": [
+                                    "FollowSchedule",
+                                    "PermanentOverride",
+                                    "TemporaryOverride"
+                                ],
+                                "maxDuration": "1.00:00:00",
+                                "timingResolution": "00:10:00"
+                            },
+                            "scheduleCapabilitiesResponse": {
+                                "maxSwitchpointsPerDay": 6,
+                                "minSwitchpointsPerDay": 1,
+                                "timingResolution": "00:10:00"
+                            }
+                        },
+                        "allowedSystemModes": [
+                            {
+                                "systemMode": "Auto",
+                                "canBePermanent": true,
+                                "canBeTemporary": false
+                            },
+                            {
+                                "systemMode": "AutoWithEco",
+                                "canBePermanent": true,
+                                "canBeTemporary": true,
+                                "maxDuration": "1.00:00:00",
+                                "timingResolution": "01:00:00",
+                                "timingMode": "Duration"
+                            },
+                            {
+                                "systemMode": "AutoWithReset",
+                                "canBePermanent": true,
+                                "canBeTemporary": false
+                            },
+                            {
+                                "systemMode": "Away",
+                                "canBePermanent": true,
+                                "canBeTemporary": true,
+                                "maxDuration": "99.00:00:00",
+                                "timingResolution": "1.00:00:00",
+                                "timingMode": "Period"
+                            },
+                            {
+                                "systemMode": "DayOff",
+                                "canBePermanent": true,
+                                "canBeTemporary": true,
+                                "maxDuration": "99.00:00:00",
+                                "timingResolution": "1.00:00:00",
+                                "timingMode": "Period"
+                            },
+                            {
+                                "systemMode": "HeatingOff",
+                                "canBePermanent": true,
+                                "canBeTemporary": false
+                            },
+                            {
+                                "systemMode": "Custom",
+                                "canBePermanent": true,
+                                "canBeTemporary": true,
+                                "maxDuration": "99.00:00:00",
+                                "timingResolution": "1.00:00:00",
+                                "timingMode": "Period"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ]
+    },
+    {
+        "locationInfo": {
+            "locationId": "2",
+            "name": "Dublin",
+            "streetAddress": "O'Connell Street",
+            "city": "Dublin",
+            "country": "Ireland",
+            "postcode": "",
+            "locationType": "Residential",
+            "useDaylightSaveSwitching": true,
+            "timeZone": {
+                "timeZoneId": "GMTStandardTime",
+                "displayName": "(UTC) Dublin, Edinburgh, Lisbon, London",
+                "offsetMinutes": 0,
+                "currentOffsetMinutes": 60,
+                "supportsDaylightSaving": true
+            },
+            "locationOwner": {
+                "userId": "123",
+                "username": "testuser@tempuri.org",
+                "firstname": "Test",
+                "lastname": "User"
+            }
+        },
+        "gateways": [
+            {
+                "gatewayInfo": {
+                    "gatewayId": "54321",
+                    "mac": "00D02D93DF09",
+                    "crc": "FE23",
+                    "isWiFi": false
+                },
+                "temperatureControlSystems": [
+                    {
+                        "systemId": "54321",
+                        "modelType": "EvoTouch",
+                        "zones": [
+                            {
+                                "zoneId": "1990303",
+                                "modelType": "HeatingZone",
+                                "heatSetpointCapabilities": {
+                                    "maxHeatSetpoint": 35,
+                                    "minHeatSetpoint": 5,
+                                    "valueResolution": 0.5,
+                                    "allowedSetpointModes": [
+                                        "PermanentOverride",
+                                        "FollowSchedule",
+                                        "TemporaryOverride"
+                                    ],
+                                    "maxDuration": "1.00:00:00",
+                                    "timingResolution": "00:10:00"
+                                },
+                                "scheduleCapabilities": {
+                                    "maxSwitchpointsPerDay": 6,
+                                    "minSwitchpointsPerDay": 1,
+                                    "timingResolution": "00:10:00",
+                                    "setpointValueResolution": 0.5
+                                },
+                                "name": "Living Room 2",
+                                "zoneType": "ZoneTemperatureControl"
+                            },
+                            {
+                                "zoneId": "1990304",
+                                "modelType": "HeatingZone",
+                                "heatSetpointCapabilities": {
+                                    "maxHeatSetpoint": 35,
+                                    "minHeatSetpoint": 5,
+                                    "valueResolution": 0.5,
+                                    "allowedSetpointModes": [
+                                        "PermanentOverride",
+                                        "FollowSchedule",
+                                        "TemporaryOverride"
+                                    ],
+                                    "maxDuration": "1.00:00:00",
+                                    "timingResolution": "00:10:00"
+                                },
+                                "scheduleCapabilities": {
+                                    "maxSwitchpointsPerDay": 6,
+                                    "minSwitchpointsPerDay": 1,
+                                    "timingResolution": "00:10:00",
+                                    "setpointValueResolution": 0.5
+                                },
+                                "name": "Kitchen 2",
+                                "zoneType": "ZoneTemperatureControl"
+                            },
+                            {
+                                "zoneId": "1990306",
+                                "modelType": "HeatingZone",
+                                "heatSetpointCapabilities": {
+                                    "maxHeatSetpoint": 35,
+                                    "minHeatSetpoint": 5,
+                                    "valueResolution": 0.5,
+                                    "allowedSetpointModes": [
+                                        "PermanentOverride",
+                                        "FollowSchedule",
+                                        "TemporaryOverride"
+                                    ],
+                                    "maxDuration": "1.00:00:00",
+                                    "timingResolution": "00:10:00"
+                                },
+                                "scheduleCapabilities": {
+                                    "maxSwitchpointsPerDay": 6,
+                                    "minSwitchpointsPerDay": 1,
+                                    "timingResolution": "00:10:00",
+                                    "setpointValueResolution": 0.5
+                                },
+                                "name": "Master Bed 2",
+                                "zoneType": "ZoneTemperatureControl"
+                            },
+                            {
+                                "zoneId": "1990307",
+                                "modelType": "HeatingZone",
+                                "heatSetpointCapabilities": {
+                                    "maxHeatSetpoint": 35,
+                                    "minHeatSetpoint": 5,
+                                    "valueResolution": 0.5,
+                                    "allowedSetpointModes": [
+                                        "PermanentOverride",
+                                        "FollowSchedule",
+                                        "TemporaryOverride"
+                                    ],
+                                    "maxDuration": "1.00:00:00",
+                                    "timingResolution": "00:10:00"
+                                },
+                                "scheduleCapabilities": {
+                                    "maxSwitchpointsPerDay": 6,
+                                    "minSwitchpointsPerDay": 1,
+                                    "timingResolution": "00:10:00",
+                                    "setpointValueResolution": 0.5
+                                },
+                                "name": "Office 2",
+                                "zoneType": "ZoneTemperatureControl"
+                            }
+                        ],
+                        "allowedSystemModes": [
+                            {
+                                "systemMode": "Auto",
+                                "canBePermanent": true,
+                                "canBeTemporary": false
+                            },
+                            {
+                                "systemMode": "AutoWithEco",
+                                "canBePermanent": true,
+                                "canBeTemporary": true,
+                                "maxDuration": "1.00:00:00",
+                                "timingResolution": "01:00:00",
+                                "timingMode": "Duration"
+                            },
+                            {
+                                "systemMode": "AutoWithReset",
+                                "canBePermanent": true,
+                                "canBeTemporary": false
+                            },
+                            {
+                                "systemMode": "Away",
+                                "canBePermanent": true,
+                                "canBeTemporary": true,
+                                "maxDuration": "99.00:00:00",
+                                "timingResolution": "1.00:00:00",
+                                "timingMode": "Period"
+                            },
+                            {
+                                "systemMode": "DayOff",
+                                "canBePermanent": true,
+                                "canBeTemporary": true,
+                                "maxDuration": "99.00:00:00",
+                                "timingResolution": "1.00:00:00",
+                                "timingMode": "Period"
+                            },
+                            {
+                                "systemMode": "HeatingOff",
+                                "canBePermanent": true,
+                                "canBeTemporary": false
+                            },
+                            {
+                                "systemMode": "Custom",
+                                "canBePermanent": true,
+                                "canBeTemporary": true,
+                                "maxDuration": "99.00:00:00",
+                                "timingResolution": "1.00:00:00",
+                                "timingMode": "Period"
+                            }
+                        ]
+                    }
+                ]
+            }
+        ]
+    }
+]

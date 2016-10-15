@@ -1,0 +1,98 @@
+{
+  "locationId": "1",
+  "gateways": [
+    {
+      "gatewayId": "12345",
+      "temperatureControlSystems": [
+        {
+          "systemId": "12345",
+          "zones": [
+            {
+              "zoneId": "1571555",
+              "temperatureStatus": {
+                "temperature": 18,
+                "isAvailable": true
+              },
+              "activeFaults": [],
+              "heatSetpointStatus": {
+                "targetTemperature": 12,
+                "setpointMode": "FollowSchedule"
+              },
+              "name": "Spare Bed"
+            },
+            {
+              "zoneId": "1572181",
+              "temperatureStatus": {
+                "temperature": 18,
+                "isAvailable": true
+              },
+              "activeFaults": [],
+              "heatSetpointStatus": {
+                "targetTemperature": 5,
+                "setpointMode": "PermanentOverride"
+              },
+              "name": "Office"
+            },
+            {
+              "zoneId": "1572199",
+              "temperatureStatus": {
+                "temperature": 19.5,
+                "isAvailable": true
+              },
+              "activeFaults": [],
+              "heatSetpointStatus": {
+                "targetTemperature": 12,
+                "setpointMode": "FollowSchedule"
+              },
+              "name": "Master Bed"
+            },
+            {
+              "zoneId": "1572213",
+              "temperatureStatus": {
+                "temperature": 18,
+                "isAvailable": true
+              },
+              "activeFaults": [],
+              "heatSetpointStatus": {
+                "targetTemperature": 17,
+                "setpointMode": "FollowSchedule"
+              },
+              "name": "Kitchen"
+            },
+            {
+              "zoneId": "1572226",
+              "temperatureStatus": {
+                "temperature": 21,
+                "isAvailable": true
+              },
+              "activeFaults": [],
+              "heatSetpointStatus": {
+                "targetTemperature": 16,
+                "setpointMode": "FollowSchedule"
+              },
+              "name": "Living Room"
+            }
+          ],
+          "dhw": {
+            "dhwId": "1572162",
+            "temperatureStatus": {
+              "temperature": 56,
+              "isAvailable": true
+            },
+            "stateStatus": {
+              "state": "Off",
+              "mode": "FollowSchedule"
+            },
+            "activeFaults": []
+          },
+          "activeFaults": [],
+          "systemModeStatus": {
+            "mode": "Auto",
+            "isPermanent": true
+          }
+        }
+      ],
+      "activeFaults": []
+    }
+  ]
+}
