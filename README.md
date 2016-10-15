@@ -75,7 +75,7 @@ There are a few rules you must follow for your plugin:
 
 
 ## Limitations
-* Only a single EvoHome location is currently supported
+* Only a single EvoHome location is currently supported (you can specify which one if you have multiple locations)
 * In theory this should work as a scheduled job (cron|launchd|whatever windows uses) but I have no idea how to get the scheduled "environment" to pick up the same python 
   settings/config as a conole app for a logged on user picks up (various attempts failed) so I just run it in a console window and leave it open.
   
