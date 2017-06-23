@@ -3,7 +3,7 @@
 ### Purpose
 
 To allow you to read your actual and desired temperatures from your [EvoHome](http://www.honeywelluk.com/products/Systems/Zoned/evohome-Main/) system (and others) and log them to a variety of destinations.
-Destinations include "data stores" such as .csv files or influxdb database for further injestion by Excel or [grafana](https://grafana.net) respectively, or directly to graphing websites such as [Plot.ly](http://plot.ly.com) and [emoncms](https://emoncms.org)
+Destinations include "data stores" such as .csv files or influxdb database for further ingestion by Excel or [grafana](https://grafana.net) respectively, or directly to graphing websites such as [Plot.ly](http://plot.ly.com) and [emoncms](https://emoncms.org)
 
 ### Getting Started
 1. Clone the entire repo to your preferred location.
