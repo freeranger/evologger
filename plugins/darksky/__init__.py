@@ -12,7 +12,7 @@ forecast_logger = logging.getLogger('darksky-plugin:')
 invalidConfig = False
 
 try:
-    config = ConfigParser.ConfigParser(allow_no_value=True)
+    config = configparser.ConfigParser(allow_no_value=True)
     config.read('config.ini')
 
     forecast_debug_enabled = is_debugging_enabled('DarkSky')
@@ -26,7 +26,7 @@ try:
     else:
         forecast_zone = "Outside"
 
-except Exception, e:
+except Exception as e:
     forecast_logger.error("Error reading config:\n%s", e)
     invalidConfig = True
 
@@ -45,7 +45,7 @@ def read():
     if forecast_read_enabled:
         try:
             forecast = forecastio.load_forecast(forecast_api_key, forecast_latitude, forecast_longitude)
-        except Exception, e:
+        except Exception as e:
             forecast_logger.error("DarkSky API error - aborting read:\n%s", e)
             return []
 

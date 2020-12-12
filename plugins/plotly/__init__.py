@@ -14,7 +14,7 @@ plotly_logger = logging.getLogger('plotly-plugin:')
 invalidConfig = False
 
 try:
-    config = ConfigParser.SafeConfigParser(allow_no_value=True)
+    config = configparser.SafeConfigParser(allow_no_value=True)
     config.read('config.ini')
 
     plotly_username = config.get("Plotly", "username")
@@ -24,7 +24,7 @@ try:
     else:
         ploty_max_points_per_graph = 288
 
-except Exception, e:
+except Exception as e:
     plotly_logger.error("Error reading config:\n%s", e)
     invalidConfig = True
 
@@ -134,7 +134,7 @@ def write(timestamp, temperatures):
                 else:
                     plotly_logger.debug("Zone %s does not have a stream id, ignoring")
 
-    except Exception, e:
+    except Exception as e:
         plotly_logger.error("Plot.ly API error - aborting write\n%s", e)
 
     if plotly_debugEnabled:

@@ -11,7 +11,7 @@ invalidConfig = False
 
 try:
 
-    config = ConfigParser.ConfigParser(allow_no_value=True)
+    config = configparser.ConfigParser(allow_no_value=True)
     config.read('config.ini')
 
     influx_debug_enabled = is_debugging_enabled('InfluxDB')
@@ -26,7 +26,7 @@ try:
     if influx_debug_enabled:
         influx_logger.debug("Influx Host: %s:%s Database: %s", influx_hostname, influx_port, influx_database)
 
-except Exception, e:
+except Exception as e:
     influx_logger.error("Error reading config:\n%s", e)
     invalidConfig = True
 

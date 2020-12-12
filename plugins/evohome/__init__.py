@@ -13,7 +13,7 @@ evohome_plugin_logger = logging.getLogger('evohome-plugin:')
 invalidConfig = False
 
 try:
-    config = ConfigParser.ConfigParser(allow_no_value=True)
+    config = configparser.ConfigParser(allow_no_value=True)
     config.read('config.ini')
 
     evohome_debug_enabled = is_debugging_enabled('EvoHome')
@@ -29,7 +29,7 @@ try:
     else:
         hot_water_setpoint = None
 
-except Exception, e:
+except Exception as e:
     evohome_plugin_logger.error("Error reading config:\n%s", e)
     invalidConfig = True
 
@@ -50,7 +50,7 @@ class EvohomeMultiLocationClient(EvohomeClient):
             actual_location = self._find_location_by_name(locationId)
 
         if actual_location is None:
-            raise ValueError('No location found with the id or name "%s"' % locationId)
+            raise ValueError('No location found with the id or name "%s"' % locationId) from None
         return actual_location
 
     # Get the heating system for the location with the supplied id or name, or for the first location if none is specified
@@ -60,12 +60,12 @@ class EvohomeMultiLocationClient(EvohomeClient):
         if len(location._gateways) == 1:
             gateway = location._gateways[0]
         else:
-            raise Exception("More than one gateway available")
+            raise Exception("More than one gateway available") from None
 
         if len(gateway._control_systems) == 1:
             control_system = gateway._control_systems[0]
         else:
-            raise Exception("More than one control system available")
+            raise Exception("More than one control system available") from None
 
         return control_system
 
@@ -81,7 +81,7 @@ class EvohomeMultiLocationClient(EvohomeClient):
             evohome_plugin_logger.debug('Found locationId: %s' % locationId)
             return matching_locations[0]
         else:
-            raise ValueError('Found %d locations matching "%s"' % locationId)
+            raise ValueError('Found %d locations matching "%s"' % locationId) from None
 
 
     def _find_location_by_name(self, name):
@@ -134,7 +134,7 @@ def read():
             client = EvohomeMultiLocationClient(evohome_username, evohome_password, debug=evohome_http_debug_enabled)
             if global_debug:
                 logging.getLogger().setLevel(logging.DEBUG)
-    except Exception, e:
+    except Exception as e:
         evohome_plugin_logger.error("EvoHome API error - aborting read\n%s", e)
         return []
 
@@ -149,7 +149,7 @@ def read():
                 evohome_plugin_logger.debug('Getting data for location: %s', evohome_location)
 
             zones = client.get_heating_system(evohome_location).temperatures()
-        except Exception, e:
+        except Exception as e:
             evohome_plugin_logger.error("EvoHome API error getting temperatures - aborting\n%s", e)
             return
 

@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 import time
 from datetime import datetime
@@ -8,7 +8,7 @@ import sys, getopt
 
 logging.raiseExceptions = True
 
-config = ConfigParser.ConfigParser(allow_no_value=True)
+config = configparser.ConfigParser(allow_no_value=True)
 config.read('config.ini')
 
 logger = None
@@ -28,7 +28,7 @@ def get_temperatures():
                 if not temps:
                     continue
 
-            except Exception, e:
+            except Exception as  e:
                 logger.error("Error reading temps from %s: $s", plugin.plugin_name, e)
                 return []
 
@@ -42,25 +42,25 @@ def get_temperatures():
 
 def main(argv):
 
-    polling_interval = config.getint("EvoHome", "pollingInterval")
+    polling_interval = config.getint('EvoHome', 'pollingInterval')
     debug_logging = False
 
     try:
         opts, args = getopt.getopt(argv, "hdi:", ["help","interval", "debug="])
     except getopt.GetoptError:
-        print 'evohome-logger.py -h for help'
+        print('evologger.py -h for help')
         sys.exit(2)
     for opt, arg in opts:
         if opt in ('-h', '--help'):
-            print 'evohome-logger, version 0.1'
-            print ''
-            print 'usage:  evohome-logger.py [-h|--help] [-d|--debug <true|false>] [-i|--interval <interval>]'
-            print ''
-            print ' h|help                : display this help page'
-            print ' d|debug               : turn on debug logging, regardless of the config.ini setting'
-            print ' i|interval <interval> : Log temperatures every <polling interval> seconds, overriding the config.ini value'
-            print '                         If 0 is specified then temperatures are logged only once and the program exits'
-            print ''
+            print('evologger, version 0.2')
+            print('')
+            print('usage:  evologger.py [-h|--help] [-d|--debug <true|false>] [-i|--interval <interval>]')
+            print('')
+            print(' h|help                : display this help page')
+            print(' d|debug               : turn on debug logging, regardless of the config.ini setting')
+            print(' i|interval <interval> : Log temperatures every <polling interval> seconds, overriding the config.ini value')
+            print('                         If 0 is specified then temperatures are logged only once and the program exits')
+            print('')
             sys.exit()
         elif opt in ('-i', '--interval'):
             if arg.isdigit():
@@ -110,7 +110,7 @@ def main(argv):
                     logger.debug('Writing temperatures to %s', plugin.plugin_name)
                     try:
                         plugin.write(timestamp, temperatures)
-                    except Exception, e:
+                    except Exception as e:
                         logger.error('Error trying to write to %s: %s', plugin.plugin_name, str(e))
 
             if polling_interval == 0:
@@ -119,7 +119,7 @@ def main(argv):
                 logger.info("Going to sleep for %s minutes", (polling_interval/60))
                 time.sleep(polling_interval)
 
-    except Exception, e:
+    except Exception as e:
         logger.error('An error occurred, trying again in 15 seconds: %s', str(e))
         time.sleep(15)
 

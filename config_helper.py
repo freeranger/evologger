@@ -1,8 +1,8 @@
-import ConfigParser
+import configparser
 import logging
 config_logger = logging.getLogger(__name__)
 
-config = ConfigParser.ConfigParser(allow_no_value=True)
+config = configparser.ConfigParser(allow_no_value=True)
 config.read('config.ini')
 
 

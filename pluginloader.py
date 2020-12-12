@@ -1,7 +1,7 @@
 import imp
 import os
 import logging
-import ConfigParser
+import configparser
 from config_helper import get_boolean_or_default
 
 plugin_logger = logging.getLogger('pluginloader::')
@@ -11,7 +11,7 @@ class PluginLoader:
 
     def __init__(self, allowed_plugins=[]):
 
-        config = ConfigParser.ConfigParser(allow_no_value=True)
+        config = configparser.ConfigParser(allow_no_value=True)
         config.read('config.ini')
 
         self.plugins_folder = './plugins'   # Location of the plugins
@@ -32,7 +32,7 @@ class PluginLoader:
             if not os.path.isdir(location) or not self.mainModule + ".py" in os.listdir(location):
                 continue
             plugin_logger.debug('Plugin: %s', plugin)
-            if (len(allowed_plugins) == 0) or (allowedPluginsDict.has_key(plugin.lower())):
+            if (len(list(allowed_plugins)) == 0) or (allowedPluginsDict.has_key(plugin.lower())):
                 section_name = allowedPluginsDict[plugin.lower()]
                 disabled = get_boolean_or_default(section_name, 'disabled', False)
                 if disabled:
