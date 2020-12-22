@@ -71,7 +71,7 @@ class EvohomeMultiLocationClient(EvohomeClient):
 
 
     def _find_location_by_id(self, locationId):
-        matching_locations = filter(lambda l: l.locationId == locationId, self.locations)
+        matching_locations = list(filter(lambda l: l.locationId == locationId, self.locations))
 
         matching_locations_count = len(matching_locations)
         if matching_locations_count == 0:
@@ -85,7 +85,7 @@ class EvohomeMultiLocationClient(EvohomeClient):
 
 
     def _find_location_by_name(self, name):
-        matching_locations = filter(lambda l: l.name == name, self.locations)
+        matching_locations = list(filter(lambda l: l.name == name, self.locations))
 
         matching_locations_count = len(matching_locations)
         if matching_locations_count == 0:
