@@ -1,5 +1,7 @@
 # [Plot.ly](https://plot.ly) Plugin
 
+** IMPORTANT:  THIS PLUGIN DOES NOT WORK AT THE MOMENT, PLEASE DO NOT USE **
+
 Writes the temperatures to a set of [Plot.ly](https://plot.ly) streams.
 
 ## Prerequisites
@@ -36,3 +38,12 @@ python plugins/plotly/__init__.py
 ```
 
 You will need to repeat this if you add more zones or change stream id's etc
+
+
+## Changelog
+### 2.0.0-prealpha (2022-12-28)
+- Upgraded to Python 3.9
+- Additional logging and bug fixes
+- Beginnings of change to use chart_studio
+### 1.0.0 (2017)
+Initial release

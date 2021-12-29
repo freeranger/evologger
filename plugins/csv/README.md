@@ -7,7 +7,7 @@ For each zone then, you get a column &lt;zone name&gt; [A] for the actual measur
 If a target temperature is available then you get another column  &lt;zone name&gt; [T] representing the target temperature.
 An input plugin measuring the outside temperature for example won't have a target temperature available.
  
-## Example output##
+## Example output
 ```
 Time,Kitchen [A],Kitchen [T],Hot Water [A],Hot Water [T],Outside
 2016-06-05 15:17:31,21.2,12.0,45.0,55.0,21.3
@@ -21,3 +21,10 @@ the hot water is 45 degrees, target 55 (HW will be on trying to reach this temp)
 [Csv]
 filename=<absolute or relative name of file to write to> 
 ```
+
+## Changelog
+### 2.0.0 (2022-12-28)
+- Upgraded to Python 3.9
+- Additional logging and bug fixes
+### 1.0.0 (2017)
+Initial release

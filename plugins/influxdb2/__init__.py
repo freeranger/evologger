@@ -1,13 +1,15 @@
 """
-InfluxDB v1.x input plugin
+InfluxDB v2.x input plugin
 """
-# pylint: disable=C0103,C0301,W0406,W0703
+# pylint: disable=C0103,C0301,W0703
 
 import sys
-from influxdb import InfluxDBClient, exceptions
+from influxdb_client import InfluxDBClient, Point
+from influxdb_client.client.exceptions import InfluxDBError
+from influxdb_client.client.write_api import SYNCHRONOUS
 from config_helper import *
 
-plugin_name = "InfluxDB"
+plugin_name = "InfluxDB2"
 plugin_type="output"
 
 __logger = get_plugin_logger(plugin_name)
@@ -18,14 +20,14 @@ try:
     __section = get_config()[plugin_name]
     __hostname = __section["hostname"]
     __port = __section["port"]
-    __database = __section["database"]
-    __username = __section["username"]
-    __password = __section["password"]
+    __org = __section["org"]
+    __bucket = __section["bucket"]
+    __apikey = __section["apikey"]
 
-    __logger.debug(f'Influx Host: {__hostname}:{__port} Database: {__database}')
+    __logger.debug(f'Influx Host: {__hostname}:{__port} Org: {__org}, Bucket:{__bucket}')
 
 except Exception as config_ex:
-    __logger.exception("Error reading config:\n%s", config_ex)
+    __logger.exception(f'Error reading config:\n{config_ex}')
     __invalid_config = True
 
 
@@ -40,19 +42,10 @@ def get_zone_measurements(time, zone, actual, target):
 
     def create_point(name: str, value: float):
         try:
-            return {
-                    "measurement": name,
-                    "tags": {
-                        "zone": zone,
-                    },
-                    "time": time,
-                    "fields": {
-                        "value": value
-                    }
-                }
+            return Point(name).time(time).tag("zone", zone).field("value", value)
         except Exception as e:
             __logger.exception(f'Error creating data point for {name}, zone: {zone}, value: {value}:\n{e}')
-            return {}
+            return Point(name)
 
     if actual is not None and actual != '':
         record_actual = create_point("zone_temp.actual", float(actual))
@@ -73,13 +66,15 @@ def write(timestamp, temperatures):
 
     if __invalid_config:
         __logger.warning('Invalid config, aborting write')
+        return
 
     debug_message = f'Writing to {plugin_name}'
     if __simulation:
         debug_message += ' [SIMULATED]'
     __logger.debug(debug_message)
 
-    influx_client = InfluxDBClient(__hostname, __port, __username, __password, __database)
+    influx_client = InfluxDBClient(url=f'{__hostname}:{__port}', token=__apikey, org=__org)
+    write_api = influx_client.write_api(write_options=SYNCHRONOUS)
 
     debug_row_text = f'{timestamp}: '
     data = []
@@ -105,8 +100,12 @@ def write(timestamp, temperatures):
         else:
             __logger.debug(debug_row_text)
             __logger.debug('Writing all zone measurements to influx...')
-            influx_client.write_points(data)
-    except exceptions.InfluxDBClientError as e:
+            write_api.write(bucket=__bucket, record=data)
+    except InfluxDBError as e:
+        __logger.exception(f'Influx DB error - aborting write\n{e}')
+        if e.response.status == 401:
+            __logger.exception(f'Insufficient write permissions to Bucket: "{__bucket}" - aborting write\n{e}')
+            raise Exception(f'Insufficient write permissions to Bucket: {__bucket}.') from e
         __logger.exception(f'Influx DB error - aborting write\n{e}')
         raise
     except Exception as e:

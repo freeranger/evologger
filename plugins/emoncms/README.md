@@ -4,13 +4,13 @@ Writes the temperatures to [Emoncms](https://emoncms.org).
 
 ## Prerequisites
 * An [Emoncms](https://emoncms.org) Read & Write API key, available from [here](https://emoncms.org/site/api#input) once you have signed up with them
-* A node number to use - basically just decide which node will receive the evologger data - no actual configuration required at this stage.
+* A node to use - basically just decide which node will receive the evologger data - no actual configuration required at this stage and the node does not need to exist in advance
 
 ## config.ini settings
 ```
 [Emoncms]
 apiKey=<your emoncms read/write  api key>
-nodeNumber=<the node number to use?
+node=<the node to use>
 ```
 
 ## Setting up Emoncms *
@@ -38,3 +38,11 @@ Once you have configured the plugin and run evologger to log at least one set of
    ![allzones](https://cloud.githubusercontent.com/assets/1401069/16238572/ca060faa-37d8-11e6-920a-ccb19fb030b0.png)
 
 _<sub>* Thanks to bmccluskey from the automatedhome.co.uk for these excellent instructions.</sub>_
+
+
+## Changelog
+### 2.0.0 (2022-12-28)
+- Upgraded to Python 3.9
+- Additional logging and bug fixes
+### 1.0.0 (2017)
+Initial release

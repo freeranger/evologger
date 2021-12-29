@@ -1,69 +1,77 @@
-import urllib2
+"""
+EMON CMS output plugin
+"""
+# pylint: disable=C0103,W0703
+
+import urllib.request
+import urllib.error
+import sys
+import time
 from config_helper import *
 
 plugin_name = "Emoncms"
 plugin_type = "output"
 
-emon_logger = logging.getLogger('emoncms-plugin:')
-
-invalidConfig = False
+__logger = get_plugin_logger(plugin_name)
+__invalid_config = False
 
 try:
-    config = configparser.ConfigParser(allow_no_value=True)
-    config.read('config.ini')
+    __config = get_config()
+    __simulation = get_boolean_or_default(plugin_name, 'Simulation', False)
 
-    emon_debug_enabled = is_debugging_enabled('Emoncms')
-    emon_write_enabled = not get_boolean_or_default('Emoncms', 'Simulation', False)
+    __api_key = __config.get(plugin_name, "apiKey")
+    __node = __config.get(plugin_name, "node")
 
-    emon_api_key = config.get("Emoncms", "apiKey")
-    emon_node_number = config.getint("Emoncms", "nodeNumber")
+    __post_url=f'http://emoncms.org/input/post?apikey={__api_key}&node={__node}'
 
-    emon_post_url='http://emoncms.org/input/post.json?apikey=' + emon_api_key + '&node=' + str(emon_node_number) + '&json={'
-
-except Exception as e:
-    emon_logger.error("Error reading config:\n%s", e)
-    invalidConfig = True
+except Exception as config_ex:
+    __logger.exception(f'Error reading config:\n{config_ex}')
+    __invalid_config = True
 
 
 def write(timestamp, temperatures):
+    """
+    Writes the temperatures to emoncms.org
+    """
 
-    if invalidConfig:
-        if emon_debug_enabled:
-            emon_logger.debug('Invalid config, aborting write')
-            return []
+    if __invalid_config:
+        __logger.debug('Invalid config, aborting write')
+        return
 
     debug_message = 'Writing to ' + plugin_name
-    if not emon_write_enabled:
+    if __simulation:
         debug_message += ' [SIMULATED]'
-    emon_logger.debug(debug_message)
+    __logger.debug(debug_message)
 
-    debug_temperatures = '%s: ' % timestamp
-    url = emon_post_url
+    text_temperatures = f'{timestamp}: '
+    url = f'{__post_url}&time={time.mktime(timestamp.timetuple())}&json={{'
+
     for temperature in temperatures:
-        url = '%s%s Actual: %s,' % (url, temperature.zone, str(temperature.actual))
-        debug_temperatures += "%s (%s A" % (temperature.zone, temperature.actual)
+        url = f'{url}{temperature.zone} Actual: {str(temperature.actual)},'
+        text_temperatures += f'{temperature.zone} ({temperature.actual} A'
         if temperature.target is not None:
-            url += ',%s Target: %s,' % (temperature.zone, str(temperature.target))
-            debug_temperatures += ", %s T" % temperature.target
+            url += f'{temperature.zone} Target: {str(temperature.target)},'
+            text_temperatures += f', {temperature.target} T) ' 
 
     url += '}'
     url = url.replace(",}", "}")
     url = url.replace(" ", "")
-    debug_temperatures += ') '
-
-    if emon_debug_enabled:
-        emon_logger.debug(debug_temperatures)
-        emon_logger.debug('URL:' + url)
+    text_temperatures += ') '
 
     try:
-        if emon_write_enabled:
-            response = urllib2.urlopen(url)
-            emon_logger.debug('response: ' + str(response))
+        if __simulation:
+            __logger.info("[SIMULATED] %s", text_temperatures)
+        else:
+            __logger.debug(text_temperatures)
+            __logger.debug('URL:' + url)
+            with urllib.request.urlopen(url) as response:
+                __logger.debug(f'Emon API response: {response.status} {response.read().decode()}')
+    except urllib.error.HTTPError as e:
+        __logger.exception(f'Emon API HTTPError - aborting write\n{e.read().decode()}')
     except Exception as e:
-        emon_logger.exception("Emon API error - aborting write\n%s", e)
+        __logger.exception(f'Emon API error - aborting write\n{e}')
 
 
 # if called directly then this is what will execute
 if __name__ == "__main__":
-    import sys
     write(sys.argv[1], sys.argv[2])

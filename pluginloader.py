@@ -1,54 +1,59 @@
+"""
+Plugin module loader
+"""
+# pylint: disable=C0103,C0301,R0903
+
 import imp
 import os
 import logging
-import configparser
 from config_helper import get_boolean_or_default
-
-plugin_logger = logging.getLogger('pluginloader::')
 
 
 class PluginLoader:
+    """
+    Plugin Loader to load configured plugins from the plugins folder
+    """
 
-    def __init__(self, allowed_plugins=[]):
+    __MAIN_MODULE ='__init__' # The main module name to look for in the plugin folder
 
-        config = configparser.ConfigParser(allow_no_value=True)
-        config.read('config.ini')
-
-        self.plugins_folder = './plugins'   # Location of the plugins
-        self.mainModule = '__init__'        #The main module name to look for in the plugin folder
-
-        plugin_logger.debug("Loading Plugins from %s....", self.plugins_folder)
+    def __init__(self, allowed_plugins, plugins_folder: str):
+        self.__logger = logging.getLogger('pluginloader::')
+        self.__logger.debug("Loading Plugins from %s....", plugins_folder)
 
         self.inputs = []
         self.outputs = []
-        possibleplugins = os.listdir(self.plugins_folder)
-        allowedPluginsDict = {}
+        possibleplugins = os.listdir(plugins_folder)
+        allowed_plugins_dict = {}
 
         for item in allowed_plugins:
-            allowedPluginsDict[item.lower()] = item
+            allowed_plugins_dict[item.lower()] = item
 
         for plugin in possibleplugins:
-            location = os.path.join(self.plugins_folder, plugin)
-            if not os.path.isdir(location) or not self.mainModule + ".py" in os.listdir(location):
+            location = os.path.join(plugins_folder, plugin)
+            if not os.path.isdir(location) or not PluginLoader.__MAIN_MODULE + ".py" in os.listdir(location):
                 continue
-            plugin_logger.debug('Plugin: %s', plugin)
-            if (len(list(allowed_plugins)) == 0) or (allowedPluginsDict.has_key(plugin.lower())):
-                section_name = allowedPluginsDict[plugin.lower()]
+            self.__logger.debug("Plugin: %s", plugin)
+            if (len(list(allowed_plugins)) == 0) or (plugin.lower() in allowed_plugins_dict):
+                section_name = allowed_plugins_dict[plugin.lower()]
                 disabled = get_boolean_or_default(section_name, 'disabled', False)
                 if disabled:
-                    plugin_logger.debug('%s specifically disabled in config', section_name)
+                    self.__logger.debug("%s specifically disabled in config", section_name)
                     continue
-                info = imp.find_module(self.mainModule, [location])
-                p = imp.load_module(self.mainModule, *info)
-                plugin_logger.info('%s loaded', section_name)
-                if p.plugin_type=="output":
+                info = imp.find_module(PluginLoader.__MAIN_MODULE, [location])
+                plugin_module = imp.load_module(PluginLoader.__MAIN_MODULE, *info)
+                self.__logger.info("Plugin: %s loaded", section_name)
+                if plugin_module.plugin_type=="output":
                     self.outputs.append({"name": plugin, "info": info})
                 else:
                     self.inputs.append({"name": plugin, "info": info})
             else:
-                plugin_logger.debug('%s disabled - not in allowed list', plugin)
+                self.__logger.debug("%s disabled - not in allowed list", plugin)
 
-    def get(self, plugin):
-        plugin_logger.debug('get(%s)', plugin["name"])
-        return imp.load_module(self.mainModule, *plugin["info"])
 
+    def get(self, plugin: str):
+        """
+        Loads and returns a plugin module
+        """
+        self.__logger.debug("get(%s)", plugin['name'])
+        return imp.load_module(PluginLoader.__MAIN_MODULE, *plugin["info"])
+    

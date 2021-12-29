@@ -1,13 +1,18 @@
-# [InfluxDB](https://influxdata.com/time-series-platform/influxdb/) Plugin
+# [InfluxDB 1.x](https://influxdata.com/time-series-platform/influxdb/) Plugin
 
-Writes the temperatures to an [InfluxDB](https://influxdata.com/time-series-platform/influxdb/) database.
+Writes the temperatures to an [InfluxDB 1.x](https://www.influxdata.com) database.
 
 ## Prerequisites
-* An Influx instance you can access
+* An InfluxDB 1.x instance you can access
 * An Influx database to store the temperature data in
 * An Influx username, and password with write access to same
 * The Influx python client installed on the same machine:  
+
   `pip install influxdb`
+
+  or, to upgrade your existing one:
+  
+  `pip install influxdb --upgrade`
 
 ## config.ini settings
 ```
@@ -27,13 +32,20 @@ Once you have installed [Grafana](https://grafana.net) you can create a dashboar
 1. Add your influx database to grafana: http://docs.grafana.org/datasources/influxdb/
 2. Create or edit a dashboard
 3. Add a graph per zone and:
-    1. Select your Influx database as the "panel data source"
+    1. Select your InfluxDB as the "panel data source"
     2. Add the Actual temperature, e.g.:
     3. From: default zone_temp.actual
     4. Where: zone = Kitchen
     5. Select: field(value)
     6. Group By: tag(zone)
     7. Format as: Timeseries.
-    8. Repeat for the expected temperature selecting zone_temp.target instead of zone_temp.actual
+    8. Repeat for the expected temperature selecting, zone_temp.target instead of zone_temp.actual
 
-Repeat 3. above for each zone you want on the graph.
+
+## Changelog
+### 2.0.0 (2022-12-28)
+- Upgraded to Python 3.9
+- Additional logging and bug fixes
+### 1.0.0 (2017)
+Initial release
+
