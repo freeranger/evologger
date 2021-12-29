@@ -104,6 +104,9 @@ There are a few rules you must follow for your plugin:
 - New output plugins
   - Console
   - InfluxDB 2.x
+- Note: The following do not work at the moment and will hopefully be addressed soon
+  - The Plot.ly plugin
+  - Unit tests
 
 ### 1.0.0 (2017)
 Initial release
