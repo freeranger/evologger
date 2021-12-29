@@ -12,11 +12,9 @@ RUN wget -qO- http://github.com/freeranger/evologger/archive/python3.tar.gz | ta
 WORKDIR /evologger
 
 COPY ./ ./
-#COPY requirements.txt ./
-#COPY config.ini ./
 
 RUN pip install -r requirements.txt
 
-VOLUME /config /data
+VOLUME /data
 
 CMD [ "python", "./evologger.py" ]
