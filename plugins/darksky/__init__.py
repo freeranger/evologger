@@ -1,64 +1,73 @@
-from Temperature import *
-import forecastio
-from config_helper import *
+"""
+DarkSky input plugin - for getting the outside temperature
+"""
+# pylint: disable=C0103,W0703
+
 from datetime import datetime
 import random
+import urllib.error
+import forecastio
+from config_helper import *
+from Temperature import *
 
-plugin_name = "darksky.net"
+plugin_name = "DarkSky"
 plugin_type = "input"
 
-forecast_logger = logging.getLogger('darksky-plugin:')
-
-invalidConfig = False
+__logger = get_plugin_logger(plugin_name)
+__invalid_config = False
 
 try:
-    config = ConfigParser.ConfigParser(allow_no_value=True)
-    config.read('config.ini')
+    __config = get_config()
 
-    forecast_debug_enabled = is_debugging_enabled('DarkSky')
-    forecast_read_enabled = not get_boolean_or_default('DarkSky', 'Simulation', False)
+    __simulation = get_boolean_or_default(plugin_name, 'Simulation', False)
 
-    forecast_api_key = config.get("DarkSky", "apiKey")
-    forecast_latitude = config.getfloat("DarkSky", "latitude")
-    forecast_longitude = config.getfloat("DarkSky", "longitude")
-    if config.has_option("DarkSky", "Outside"):
-        forecast_zone = config.get("DarkSky", "Outside")
+    __section = __config[plugin_name]
+    __api_key = __section['apiKey']
+    __latitude = __section['latitude']
+    __longitude = __section['longitude']
+    if __config.has_option(plugin_name, "Outside"):
+        forecast_zone = __section['Outside']
     else:
         forecast_zone = "Outside"
 
-except Exception, e:
-    forecast_logger.error("Error reading config:\n%s", e)
-    invalidConfig = True
+except Exception as config_ex:
+    __logger.exception(f'Error reading config:\n{config_ex}')
+    __invalid_config = True
 
 def read():
+    """
+    Reads the outside temperature from DarkSky
+    """    
+    
+    if __invalid_config:
+        __logger.debug('Invalid config, aborting read')
+        return []
 
-    if invalidConfig:
-        if forecast_debug_enabled:
-            forecast_logger.debug('Invalid config, aborting read')
-            return []
-
-    debug_message = 'Reading Temp for (lat: %s, long: %s) from %s' % (forecast_latitude, forecast_longitude, plugin_name)
-    if not forecast_read_enabled:
+    debug_message = f'Reading Temp for (lat: {__latitude}, long: {__longitude}) from {plugin_name}'
+    if __simulation:
         debug_message += ' [SIMULATED]'
-        forecast_logger.debug(debug_message)
+        __logger.debug(debug_message)
 
-    if forecast_read_enabled:
+    if not __simulation:
         try:
-            forecast = forecastio.load_forecast(forecast_api_key, forecast_latitude, forecast_longitude)
-        except Exception, e:
-            forecast_logger.error("DarkSky API error - aborting read:\n%s", e)
+            forecast = forecastio.load_forecast(__api_key, __latitude, __longitude)
+        except urllib.error.HTTPError as e:
+            __logger.exception(f'DarkSky API HTTPError - aborting write\n{e.read().decode()}')
+        except Exception as e:
+            __logger.exception(f'DarkSky API error - aborting read:\n{e}')
             return []
 
         temp = round(forecast.currently().temperature, 1)
     else:
         temp = round(random.uniform(12.0, 23.0), 1)
 
-    if forecast_debug_enabled:
-        forecast_logger.debug('%s: %s (%s)', datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S'), forecast_zone, temp)
+    if __simulation:
+        __logger.info(f'[SIMULATED] {datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")}: {forecast_zone} ({temp})')
+    else:
+        __logger.debug(f'{datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")}: {forecast_zone} ({temp})')
 
     return [Temperature(forecast_zone, temp)]
 
 # if called directly then this is what will execute
 if __name__ == "__main__":
     read()
-
