@@ -9,10 +9,14 @@ Destinations include "data stores" such as .csv files or influxdb database for f
 ## Getting Started
 1. Clone the entire repo to your preferred location.
 2. Configure the global settings in the `[DEFAULT]` section of `config.ini` 
-2. Configure each plugin in `config.ini` according to your needs - see the `README.md` file with each plugin for details on how to configure it.
+3. Configure each plugin in `config.ini` according to your needs - see the `README.md` file with each plugin for details on how to configure it.
    All plugins live in the "plugins" folder - you can delete ones you don't want (and remove the relevant `config.ini` section) or add `disabled` to the relevant `config.ini` section to explicitly disable it
-3. run it!  
-   `python3 evologger.py`
+4. run it!  
+   - Locally
+      - `pip3 install -r requirements.txt` to add the required python packages (for all plugins)   
+      - `python3 evologger.py` to start the application (add -h for help)
+   - In Docker
+      - See below to run in Docker
 
 ## Running in Docker
 A `Dockerfile` is included so you can run evologger in a Docker container if you wish.
