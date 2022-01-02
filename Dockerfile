@@ -11,6 +11,4 @@ COPY ./ ./
 
 RUN pip install -r requirements.txt
 
-VOLUME /data
-
 CMD [ "python", "./evologger.py" ]
