@@ -23,7 +23,7 @@ filename=<absolute or relative name of file to write to>
 ```
 
 ## Changelog
-### 2.0.0 (2022-12-28)
+### 2.0.0 (2021-12-28)
 - Upgraded to Python 3.9
 - Additional logging and bug fixes
 ### 1.0.0 (2017)

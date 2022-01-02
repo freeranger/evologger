@@ -37,7 +37,7 @@ It is beyond the scope of this document to describe how to use docker but you co
 debug=<true|false>      - If true then output debugging statements.
 pollingInterval=600     - Frequency in seconds to read temperatures from input plugins and write them to the output plugins.  0 => do once, then exit
                           It is recommended that this is set to no less than 5 minutes as some of the api's used by plugins (e.g. plot.ly) limit the numer of api calls you can make per day.
-Outside=<zone name>     - Name you want to use for your outside "zone" (if you have one) when reading the external temperature - used by some input plugins, e.g. darksky.net
+Outside=<zone name>     - Name you want to use for your outside "zone" (if you have one) when reading the external temperature - used by some input plugins, e.g. darksky.net, netatmo
 HotWater=Hot Water      - Name you want to use for the Hot Water "zone" (if you have one) when reading the temperature - used by some plugins, e.g. evohome, console
 ```
 
@@ -50,6 +50,7 @@ Any plugins you don't want to use, it's probably best to remove their section(s)
 ##### Inputs
 * [Evohome](https://github.com/freeranger/evologger/blob/master/plugins/evohome/readme.md) - essential to collect values from your EvoHome system (via the [evohome-client](https://github.com/watchforstock/evohome-client) library)
 * [Darksky](https://github.com/freeranger/evologger/blob/master/plugins/darksky/readme.md) - Reads the current local temperature from [darksky.net](http://darksky.net) at the same time as your room temps are read
+* [Netatmo Weather station](https://www.netatmo.com/en-gb/weather) - reads the temperature from your weather station's Outdoor module at the same time as your room temps are read
 
 ##### Outputs
 * [Console](https://github.com/freeranger/evologger/blob/master/plugins/console/readme.md) - writes to the console
@@ -102,7 +103,15 @@ There are a few rules you must follow for your plugin:
   
   
 ## Changelog
-### 2.0.0 (2022-12-28)
+### 2.1.0 (2021-01-82)
+- Netatmo plugin added (v 1.0.0)
+- Option to specify the location of the configuration file
+- Fix changelog dates 
+- get_string_or_default will select from the DEFAULT section if an empty key exists in the plugin section
+- read_temperatures sorts the temps using the actual configured OutsideZone name and not hard coded 'Outside'
+- Evohome plugin updated (v 2.0.1)
+
+### 2.0.0 (2021-12-28)
 - Upgraded to Python 3.9
 - Additional logging and bug fixes
 - New output plugins

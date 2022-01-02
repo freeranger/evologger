@@ -18,11 +18,11 @@ Reads the outside temperature at your EvoHome location.
 apiKey=<your forecast.io api key>
 latitude=<latitude of the location you want to monitor>
 longitude=<longitude of the location you want to monitor>
-Outside=<name you want to call this "zone" - default "Outside"> recommend this setting is in the DEFAULT section of config.ini for all plugins to use
+Outside=<name you want to call this "zone" - default "Outside"> - recommend this setting is in the DEFAULT section of config.ini for all plugins to use
 ```
 
 ## Changelog
-### 2.0.0 (2022-12-28)
+### 2.0.0 (2021-12-28)
 - Upgraded to Python 3.9
 - Additional logging and bug fixes
 ### 1.0.0 (2017)

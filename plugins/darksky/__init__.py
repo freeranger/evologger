@@ -25,10 +25,8 @@ try:
     __api_key = __section['apiKey']
     __latitude = __section['latitude']
     __longitude = __section['longitude']
-    if __config.has_option(plugin_name, "Outside"):
-        forecast_zone = __section['Outside']
-    else:
-        forecast_zone = "Outside"
+    __zone = get_string_or_default(plugin_name, 'Outside', 'Outside')
+    __logger.debug("Outside Zone: %s", __zone)
 
 except Exception as config_ex:
     __logger.exception(f'Error reading config:\n{config_ex}')
@@ -62,11 +60,11 @@ def read():
         temp = round(random.uniform(12.0, 23.0), 1)
 
     if __simulation:
-        __logger.info(f'[SIMULATED] {datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")}: {forecast_zone} ({temp})')
+        __logger.info(f'[SIMULATED] {datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")}: {__zone} ({temp})')
     else:
-        __logger.debug(f'{datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")}: {forecast_zone} ({temp})')
+        __logger.debug(f'{datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")}: {__zone} ({temp})')
 
-    return [Temperature(forecast_zone, temp)]
+    return [Temperature(__zone, temp)]
 
 # if called directly then this is what will execute
 if __name__ == "__main__":

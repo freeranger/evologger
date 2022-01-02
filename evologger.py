@@ -13,13 +13,15 @@ import signal
 import sys
 import time
 import coloredlogs
-from config_helper import get_config, is_debugging_enabled
+from config_helper import get_config, get_string_or_default, is_debugging_enabled
 from pluginloader import PluginLoader
 
 logger = None
 plugins = None
 logging.raiseExceptions = True
 continue_polling = True
+outside_zone = get_string_or_default('DEFAULT', 'Outside', 'Outside')
+
 config = get_config()
 
 def handle_signal(sig, _):
@@ -48,7 +50,7 @@ def read_temperatures():
     """
     temperatures = []
     for i in plugins.inputs:
-        plugin = plugins.get(i)
+        plugin = plugins.load(i)
         if plugin is None:
             logger.error("plugin is none!: %s", i)
         else:
@@ -66,7 +68,7 @@ def read_temperatures():
                 temperatures.append(t)
 
     # Sort by zone name, with hot water on the end and finally 'Outside'
-    temperatures = sorted(temperatures, key=lambda t: (t.zone in ('Hot Water', 'Outside'), t.zone == 'Outside', t.zone))
+    temperatures = sorted(temperatures, key=lambda t: (t.zone in ('Hot Water', outside_zone), t.zone == outside_zone, t.zone))
     return temperatures
 
 
@@ -89,7 +91,7 @@ def publish_temperatures(temperatures):
         logger.debug(text_temperatures)
 
         for i in plugins.outputs:
-            plugin = plugins.get(i)
+            plugin = plugins.load(i)
             logger.debug("Writing temperatures to %s", plugin.plugin_name)
             try:
                 plugin.write(timestamp, temperatures)
@@ -117,9 +119,9 @@ def main(argv):
             print('')
             print('usage:  evologger.py [-h|--help] [-d|--debug <true|false>] [-i|--interval <interval>]')
             print('')
-            print(' h|help                : display this help page')
-            print(' d|debug               : turn on debug logging, regardless of the config.ini setting')
-            print(' i|interval <interval> : Log temperatures every <polling interval> seconds, overriding the config.ini value')
+            print(' h|help                 : display this help page')
+            print(' d|debug                : turn on debug logging, regardless of the config.ini setting')
+            print(' i|interval <interval>  : Log temperatures every <polling interval> seconds, overriding the config.ini value')
             print('                         If 0 is specified then temperatures are logged only once and the program exits')
             print('')
             sys.exit()

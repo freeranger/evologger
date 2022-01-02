@@ -57,5 +57,5 @@ Repeat Step 3 for the expected temperature specifying zone_temp.target instead o
 Repeat Step 3.2 For each zone you want on the graph if using an InfluxQL source.
 
 ## Changelog
-### 1.0.0 (2022-12-28)
+### 1.0.0 (2021-12-28)
 Initial release
