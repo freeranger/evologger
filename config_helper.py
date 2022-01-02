@@ -35,9 +35,7 @@ def get_boolean_or_default(section_name: str, option_name: str, default_value: b
     if __config.has_option(section_name, option_name):
         value = __config.get(section_name, option_name)
 
-        if value is None:
-            return True
-        return value.lower() == 'true'
+        return True if value is None else value.lower() == 'true'
     return default_value
 
 
@@ -77,7 +75,9 @@ def get_string_or_default(section_name: str, option_name: str, default_value: st
 
     if __config.has_option(section_name, option_name):
         value = __config.get(section_name, option_name)
-        return value
+        if value is not None and value != '':
+            return value
+        return get_string_or_default('DEFAULT', option_name, default_value)
     return default_value
 
 

@@ -21,5 +21,5 @@ disabled=<true to disable it, false to enable>
 ```
 
 ## Changelog
-### 1.0.0 (2022-12-28)
+### 1.0.0 (2021-12-28)
 Initial release

@@ -30,6 +30,10 @@ HotWaterSetPoint=<Target temperature for Hot Water when it is on>
 Note: These two are only required if you have hot water control
 ```
  
+## Notes
+- Authentication Tokens are cached in a file in a temp directory to avoid hitting rate limits on obtaining a token from the API.
+The ability to use access/refresh tokens is provided by the EvoHome Client library but caching of same is implemented here.
+
 ## Limitations
 * It is not possible to retrieve the desired hot water temp from the evohome api, so you must supply the `HotWaterSetPoint` value in the `config.ini` file.
 * We also don't know directly if the hot water is meant to be on or off at any given moment in time.
@@ -38,7 +42,10 @@ Note: These two are only required if you have hot water control
 
 
 ## Changelog
-### 2.0.0 (2022-12-28)
+### 2.0.1 (2022-01-02)
+- Moved tokens file to temp folder
+- Use Hot Water zone name in simulation as well as when reading for real
+### 2.0.0 (2021-12-28)
 - Upgraded to Python 3.9
 - Add support for cached access tokens
 - Additional logging and bug fixes

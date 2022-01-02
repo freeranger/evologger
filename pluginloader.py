@@ -50,10 +50,10 @@ class PluginLoader:
                 self.__logger.debug("%s disabled - not in allowed list", plugin)
 
 
-    def get(self, plugin: str):
+    def load(self, plugin: str):
         """
         Loads and returns a plugin module
         """
-        self.__logger.debug("get(%s)", plugin['name'])
+        self.__logger.debug("load(%s)", plugin['name'])
         return imp.load_module(PluginLoader.__MAIN_MODULE, *plugin["info"])
     

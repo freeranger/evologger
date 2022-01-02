@@ -8,6 +8,7 @@ import json
 import io
 import logging
 import random
+from tempfile import gettempdir
 from evohomeclient2 import EvohomeClient
 from config_helper import *
 from Temperature import *
@@ -16,6 +17,7 @@ plugin_name = "EvoHome"
 plugin_type = "input"
 
 __logger = get_plugin_logger(plugin_name)
+__token_file = f'{gettempdir()}/{plugin_name}.access_tokens.json'
 __invalid_config = False
 
 try:
@@ -134,7 +136,7 @@ def __get_evoclient():
         # Actually getting a token is rate-limited, though using it is not.
         # So we get and store tokens we can reuse them
         # https://github.com/watchforstock/evohome-client/issues/57
-        with io.open('./access_tokens.json', "r", encoding='UTF-8') as f:
+        with io.open(__token_file, "r", encoding='UTF-8') as f:
             token_data = json.load(f)
             access_token = token_data[0]
             refresh_token = token_data[1]
@@ -151,7 +153,7 @@ def __get_evoclient():
         logging.getLogger().setLevel(logging.DEBUG)
 
     # save session-id's so we don't need to re-authenticate every polling cycle.
-    with io.open('./access_tokens.json', "w", encoding='UTF-8') as f:
+    with io.open(__token_file, "w", encoding='UTF-8') as f:
         token_data = [ client.access_token, client.refresh_token, str(client.access_token_expires) ]
         json.dump(token_data, f)
 
@@ -237,7 +239,7 @@ def read():
         # Return some random temps if simulating a read
         temperatures = [Temperature("Lounge", round(random.uniform(12.0, 28.0), 1), 22.0),
                         Temperature("Master Bedroom", round(random.uniform(18.0, 25.0), 1), 12.0),
-                        Temperature("_DHW", round(random.uniform(40, 65), 1))]
+                        Temperature(__hotwater, round(random.uniform(40, 65), 1))]
         text_temperatures = f'[SIMULATED] {temperatures[0].zone} ({temperatures[0].actual} A) ({temperatures[0].target} T) {temperatures[1].zone} ({temperatures[1].actual} A) ({temperatures[1].target} T) {temperatures[2].zone} ({temperatures[2].actual} A)'
         __logger.info(text_temperatures)
 
