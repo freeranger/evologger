@@ -105,7 +105,6 @@ There are a few rules you must follow for your plugin:
 ## Changelog
 ### 2.1.0 (2021-01-82)
 - Netatmo plugin added (v 1.0.0)
-- Option to specify the location of the configuration file
 - Fix changelog dates 
 - get_string_or_default will select from the DEFAULT section if an empty key exists in the plugin section
 - read_temperatures sorts the temps using the actual configured OutsideZone name and not hard coded 'Outside'
