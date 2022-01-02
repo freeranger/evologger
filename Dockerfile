@@ -5,10 +5,6 @@ RUN apt-get update && \
 
 RUN /usr/local/bin/python -m pip install --upgrade pip
 
-#RUN apt-get install --no-cache openssl
-
-RUN wget -qO- http://github.com/freeranger/evologger/archive/python3.tar.gz | tar zxf -
-
 WORKDIR /evologger
 
 COPY ./ ./
