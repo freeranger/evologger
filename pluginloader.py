@@ -1,7 +1,7 @@
 """
 Plugin module loader
 """
-# pylint: disable=C0103,C0301,R0903
+# pylint: disable=R0903
 
 import imp
 import os
@@ -17,7 +17,7 @@ class PluginLoader:
     __MAIN_MODULE ='__init__' # The main module name to look for in the plugin folder
 
     def __init__(self, allowed_plugins, plugins_folder: str):
-        self.__logger = logging.getLogger('pluginloader::')
+        self.__logger = logging.getLogger('pluginloader')
         self.__logger.debug("Loading Plugins from %s....", plugins_folder)
 
         self.inputs = []
@@ -56,4 +56,3 @@ class PluginLoader:
         """
         self.__logger.debug("load(%s)", plugin['name'])
         return imp.load_module(PluginLoader.__MAIN_MODULE, *plugin["info"])
-    

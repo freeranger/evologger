@@ -1,7 +1,6 @@
 """
 DarkSky input plugin - for getting the outside temperature
 """
-# pylint: disable=C0103,W0703
 
 from datetime import datetime
 import random
@@ -32,11 +31,12 @@ except Exception as config_ex:
     __logger.exception(f'Error reading config:\n{config_ex}')
     __invalid_config = True
 
+# pylint disable=E1101
 def read():
     """
     Reads the outside temperature from DarkSky
-    """    
-    
+    """
+
     if __invalid_config:
         __logger.debug('Invalid config, aborting read')
         return []

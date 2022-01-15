@@ -1,4 +1,5 @@
-# pylint: disable=C0103
+# pylint: disable=C0114,R0903
+
 class Temperature:
     """
     Represents a target and actual temperature in a zone

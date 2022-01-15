@@ -2,7 +2,6 @@
 Plot.ly output plugin
 ** NOT WORKING AT THIS TIME **
 """
-# pylint: disable=C0103,C0301,W0703
 
 from collections import OrderedDict
 from configparser import ConfigParser

@@ -1,7 +1,7 @@
 """
 Evohome input plugin - for getting all your zone and DHW temperatures
 """
-# pylint: disable=C0103,C0301,R0913,W0212,W0703
+# pylint: disable=R0913,W0212
 
 from datetime import datetime
 import json
@@ -23,7 +23,6 @@ __invalid_config = False
 try:
     __config = get_config()
     __simulation = get_boolean_or_default(plugin_name, 'Simulation', False)
-    __http_debug_enabled = get_boolean_or_default(plugin_name, 'httpDebug', False)
 
     __section = __config[plugin_name]
     __username = __section['username']
@@ -148,7 +147,7 @@ def __get_evoclient():
         access_token_expires = None
         __logger.debug('No cached credentials available')
 
-    client = EvohomeMultiLocationClient(__username, __password, debug=__http_debug_enabled, refresh_token=refresh_token, access_token=access_token, access_token_expires=access_token_expires)
+    client = EvohomeMultiLocationClient(__username, __password, debug=is_debugging_enabled(plugin_name) , refresh_token=refresh_token, access_token=access_token, access_token_expires=access_token_expires)
     if global_debug:
         logging.getLogger().setLevel(logging.DEBUG)
 
@@ -195,7 +194,13 @@ def read():
             else:
                 __logger.debug(f'Getting data for location: {__location}')
 
-            zones = client.get_heating_system(__location).temperatures()
+            heating_system = client.get_heating_system(__location)
+            zones = heating_system.temperatures()
+        except KeyError as ke:
+            if heating_system.hotwater is not None:
+                __logger.exception(f'EvoHome API error getting temperatures - could be hot water- status: {heating_system.hotwater.temperatureStatus} - aborting\n{ke}')
+            else:
+                __logger.exception(f'EvoHome API error getting temperatures - aborting\n{ke}')
         except Exception as e:
             __logger.exception(f'EvoHome API error getting temperatures - aborting\n{e}')
             return []
@@ -220,7 +225,7 @@ def read():
                 try:
                     temp = float(raw_temp)
                     if temp == 128.0:
-                        __logger.warning(f'No temperature returned for Zone: {zone["name"]} - returning default ({DEFAULT_TEMP}')
+                        __logger.warning(f'No temperature returned for Zone: {zone["name"]} - returning default ({DEFAULT_TEMP}')  # pylint disable=W0640
                         return DEFAULT_TEMP
                     return temp
                 except Exception:

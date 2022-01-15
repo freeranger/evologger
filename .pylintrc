@@ -1,0 +1,5 @@
+[MASTER]
+ignore=Dockerfile,LICENSE,README.md,config.ini,requirements.txt,publish.sh,tests
+
+[MESSAGES CONTROL]
+disable=C0103,C0301,W0703,W1203

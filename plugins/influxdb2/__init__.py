@@ -1,7 +1,6 @@
 """
 InfluxDB v2.x input plugin
 """
-# pylint: disable=C0103,C0301,W0703
 
 import sys
 from influxdb_client import InfluxDBClient, Point
