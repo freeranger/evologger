@@ -22,7 +22,6 @@ logging.raiseExceptions = True
 continue_polling = True
 outside_zone = get_string_or_default('DEFAULT', 'Outside', 'Outside')
 
-config = get_config()
 
 def handle_signal(sig, _):
     """
@@ -104,6 +103,7 @@ def main(argv):
     Main appliction entry point
     """
 
+    config = get_config()
     polling_interval = config.getint('EvoHome', 'pollingInterval')
     debug_logging = False
 

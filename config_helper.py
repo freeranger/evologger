@@ -9,13 +9,12 @@ import logging
 __config_logger = logging.getLogger(__name__)
 
 __config = ConfigParser(allow_no_value=True, inline_comment_prefixes=";")
-__config.read('config.ini')
 
-
-def get_config() -> ConfigParser:
+def get_config(config_file:str = 'config.ini') -> ConfigParser:
     """
     Returns the configuration read from config.ini
     """
+    __config.read(config_file)
     return __config
 
 

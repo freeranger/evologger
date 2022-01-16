@@ -19,17 +19,17 @@ plugin_type = "input"
 __logger = get_plugin_logger(plugin_name)
 __token_file = f'{gettempdir()}/{plugin_name}.access_tokens.json'
 __invalid_config = False
+_config = None
 
 try:
-    __config = get_config()
+    _config = get_config()
     __simulation = get_boolean_or_default(plugin_name, 'Simulation', False)
     __http_debug_enabled = get_boolean_or_default(plugin_name, 'httpDebug', False)
-
-    __section = __config[plugin_name]
+    __section = _config[plugin_name]
     __username = __section['username']
     __password = __section['password']
-    __location = get_string_or_default(plugin_name, 'Location', None)
-    __hotwater = __section['HotWater']
+    _location = get_string_or_default(plugin_name, 'Location', None)
+    _hotwater = __section['HotWater']
     __hotwater_setpoint = get_float_or_default(plugin_name, 'HotWaterSetPoint', None)
 
 except Exception as config_ex:
@@ -115,7 +115,7 @@ def __is_hotwater_on(client) -> bool:
     """
     Determines if the hot water is on or not
     """
-    location = client.get_location(__location)
+    location = client.get_location(_location)
     status = location.status()
     if 'dhw' in status['gateways'][0]['temperatureControlSystems'][0]:
         __logger.debug('DHW found')
@@ -190,12 +190,12 @@ def read():
     if not __simulation:
 
         try:
-            if __location is None:
+            if _location is None:
                 __logger.debug('No location specified, will use the first by default')
             else:
-                __logger.debug(f'Getting data for location: {__location}')
+                __logger.debug(f'Getting data for location: {_location}')
 
-            zones = client.get_heating_system(__location).temperatures()
+            zones = client.get_heating_system(_location).temperatures()
         except Exception as e:
             __logger.exception(f'EvoHome API error getting temperatures - aborting\n{e}')
             return []
@@ -203,7 +203,7 @@ def read():
         for zone in zones:
             # normalise response for DHW to be consistent with normal zones
             if zone['thermostat'] == 'DOMESTIC_HOT_WATER':
-                zone['name'] = __hotwater
+                zone['name'] = _hotwater
                 if __is_hotwater_on(client):
                     if __hotwater_setpoint is not None:
                         zone['setpoint'] = __hotwater_setpoint
@@ -239,7 +239,7 @@ def read():
         # Return some random temps if simulating a read
         temperatures = [Temperature("Lounge", round(random.uniform(12.0, 28.0), 1), 22.0),
                         Temperature("Master Bedroom", round(random.uniform(18.0, 25.0), 1), 12.0),
-                        Temperature(__hotwater, round(random.uniform(40, 65), 1))]
+                        Temperature(_hotwater, round(random.uniform(40, 65), 1))]
         text_temperatures = f'[SIMULATED] {temperatures[0].zone} ({temperatures[0].actual} A) ({temperatures[0].target} T) {temperatures[1].zone} ({temperatures[1].actual} A) ({temperatures[1].target} T) {temperatures[2].zone} ({temperatures[2].actual} A)'
         __logger.info(text_temperatures)
 
