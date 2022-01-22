@@ -4,7 +4,7 @@
 
 To allow you to read your actual and desired temperatures from your [EvoHome](http://www.honeywelluk.com/products/Systems/Zoned/evohome-Main/) system (and others) and log them to a variety of destinations.
 
-Destinations include "data stores" such as .csv files or influxdb database for further ingestion by Excel or [grafana](https://grafana.net) respectively, or directly to graphing websites such as [Plot.ly](http://plot.ly.com) and [emoncms](https://emoncms.org)
+Destinations include "data stores" such as .csv files or influxdb database for further ingestion by Excel or [grafana](https://grafana.net) respectively, or directly to graphing websites such as [emoncms](https://emoncms.org)
 
 ## Getting Started
 1. Clone the entire repo to your preferred location.
@@ -19,14 +19,21 @@ Destinations include "data stores" such as .csv files or influxdb database for f
       - See below to run in Docker
 
 ## Running in Docker
-A `Dockerfile` is included so you can run evologger in a Docker container if you wish.
+A Docker image is available that you can download and run `docker pull freeranger/evologger`
+You will need to map your own configuration file into the container as the built in one is not configured.
+You may also for example map a volume/file for csv output rather than storing in the container volume.
+
+It is beyond the scope of this document to describe how to use docker but as an example you could do something like this:
+`docker run --rm -it -v $(pwd)/config.docker.ini:/evologger/config.ini freeranger/evologger`
+
+which will map the file config.docker.ini in the current folder into the running container
+
+The `Dockerfile` is included in this repo so you can build and run the container locally if you wish:
 From the source folder:
 1. `docker build -t evologger .`
 2. Run:
    - `docker run --rm -it evologger` (to run in the foregound with coloured output)
    -  `docker run --rm -d evologger` (to run in detached mode)
-
-It is beyond the scope of this document to describe how to use docker but you could map the `config.ini` file into the container so you just need to restart with a new config, and you can map a volume/file for csv output rather than storing in the container volume.
 
 **Note** If you are running services in other containers on the same host that you wish to accerss (e.g. Influx) then you need to use `host.docker.internal` in place of the host name or IP you would otherwise use - or you could use a docker compose file and ensure they are in the same docker network
 
