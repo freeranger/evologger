@@ -127,7 +127,7 @@ def configure_logging(log_level):
         http_logger = structlog.get_logger('http-logger')
         def print_http_debug_to_log(*args):
             http_logger.debug(" ".join(args))
-        http.client.HTTPConnection.debuglevel = 1
+        http.client.HTTPConnection.debuglevel = 5
         http.client.print = print_http_debug_to_log
 
 
