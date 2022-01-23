@@ -5,6 +5,7 @@ Evohome input plugin - for getting all your zone and DHW temperatures
 
 from datetime import datetime
 import json
+import http # Need this for disabling http debugging if necessary
 import io
 import logging
 import random
@@ -24,6 +25,8 @@ __invalid_config = False
 try:
     __config = get_config()
     __simulation = get_boolean_or_default(plugin_name, 'Simulation', False)
+
+    __http_debug = get_boolean_or_default('DEFAULT', 'httpDebug', False)
 
     __section = __config[plugin_name]
     __username = __section['username']
@@ -50,6 +53,7 @@ class EvohomeMultiLocationClient(EvohomeClient):
     def __init__(self, username:str, password:str, debug:bool=False, refresh_token=None, access_token=None, access_token_expires=None):
         super(EvohomeMultiLocationClient, self).__init__(username, password, debug, refresh_token, access_token, access_token_expires)
         self.__logger = get_plugin_logger(f'{plugin_name}:{self.__class__.__name__}')
+
 
     def get_location(self, locationId=None):
         """
@@ -147,7 +151,7 @@ def __get_evoclient():
     Returns an instance of an Evohome client which caches credentials
     """
 
-    # The Evohome client library turns off global debugging  it so we need to re-enable!
+    # The Evohome client library turns off global debugging so save the value incase we need to re-enable!
     global_debug = logging.getLogger().isEnabledFor(logging.DEBUG)
     try:
         # Actually getting a token is rate-limited, though using it is not.
@@ -168,6 +172,10 @@ def __get_evoclient():
     client = EvohomeMultiLocationClient(__username, __password, debug=is_debugging_enabled(plugin_name) , refresh_token=refresh_token, access_token=access_token, access_token_expires=access_token_expires)
     if global_debug:
         logging.getLogger().setLevel(logging.DEBUG)
+
+    # EvohomeClient turns on http debug logging if debug is set - we only want it if we have http debug enabled
+    if is_debugging_enabled(plugin_name) == True and __http_debug == False:
+        http.client.HTTPConnection.debuglevel = 0
 
     # save session-id's so we don't need to re-authenticate every polling cycle.
     with io.open(__token_file, "w", encoding='UTF-8') as f:
