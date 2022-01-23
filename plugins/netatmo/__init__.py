@@ -69,17 +69,20 @@ def _post_request(url: str, request_params):
     params = parse.urlencode(request_params).encode('utf-8')
     __logger.debug(full_url)
     try:
-        with requests.get(full_url, headers= {
+        with requests.post(full_url, headers= {
                     'Content-Type': 'application/x-www-form-urlencoded;charset=utf-8'
                 },
-                params=params, timeout=30) as response:
+                data=params, timeout=30) as response:
             response.raise_for_status()
             return response.json()
     except requests.HTTPError as err:
-        __logger.exception(f'Netatmo API HTTPError {response.status_code} {response.reason} - aborting read\n{err}')
+        __logger.exception(f'HTTPError at {full_url} - {err.response.status_code} {err.response.reason} {err.response.json()} - aborting read\nError: {err}')
         return None
-    except Exception as ex:
-        __logger.exception("Exception processing request to %s - %s", url, str(ex))
+    except Exception as e:
+        if hasattr(e, 'response'):
+            __logger.exception(f'Error at {full_url} {e.response.status_code} {e.response.reason} {e.response.json()} - aborting read\nError: {e}')
+        else:
+            __logger.exception(f'Error at {full_url}\nError:{e}')
         return None
 
 
