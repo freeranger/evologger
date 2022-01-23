@@ -240,7 +240,7 @@ def read():
             __logger.exception('Failed to parse station/module data from %s', response)
 
     except requests.HTTPError as e:
-        __logger.exception(f'Netatmo API HTTPError - aborting write\n{e}')
+        __logger.exception(f'Netatmo API HTTPError - aborting read\n{e}')
     except Exception as e:
         __logger.exception(f'Netatmo API error - aborting read:\n{e}')
 

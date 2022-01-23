@@ -243,7 +243,6 @@ def read():
 
                     # Handle a bug mentioned here https://www.automatedhome.co.uk/vbulletin/showthread.php?4696-Beginners-guide-to-graphing-Evohome-temperatures-using-python-and-plot-ly/page6
                     # Not sure if 128 is reported or not a number at all so deal with both...
-
                     def temp_or_default(raw_temp):
                         DEFAULT_TEMP = 0.0
                         try:

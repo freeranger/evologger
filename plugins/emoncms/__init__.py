@@ -63,12 +63,12 @@ def write(timestamp, temperatures):
             __logger.debug(text_temperatures)
             __logger.debug('URL: %s',url)
             with requests.get(url) as response:
-                __logger.debug(f'Emon API response: {response.status_code} {response.reason} {response.content}') # pylint disable=W1201
+                __logger.debug(f'Emon API response from {url}: {response.status_code} {response.reason} {response.content}') # pylint disable=W1201
                 response.raise_for_status()
     except requests.HTTPError as e:
-        __logger.exception(f'Emon API HTTPError {response.status_code} {response.reason} - aborting write\n{e}')
+        __logger.exception(f'Emon API HTTPError from {url}: {response.status_code} {response.reason} - aborting write\nError: {e}')
     except Exception as e:
-        __logger.exception(f'Emon API error - aborting write\n{e}')
+        __logger.exception(f'Emon API error writing to {url} - aborting write\nError: {e}')
 
 
 # if called directly then this is what will execute
