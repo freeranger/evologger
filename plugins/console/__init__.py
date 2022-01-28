@@ -1,7 +1,6 @@
 """
 Console output plugin
 """
-# pylint: disable=C0103,W0703
 
 import sys
 from config_helper import *

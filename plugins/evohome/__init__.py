@@ -1,13 +1,15 @@
 """
 Evohome input plugin - for getting all your zone and DHW temperatures
 """
-# pylint: disable=C0103,C0301,R0913,W0212,W0703
+# pylint: disable=R0913,W0212
 
 from datetime import datetime
 import json
+import http # Need this for disabling http debugging if necessary
 import io
 import logging
 import random
+import requests
 from tempfile import gettempdir
 from evohomeclient2 import EvohomeClient
 from config_helper import *
@@ -23,18 +25,25 @@ __invalid_config = False
 try:
     __config = get_config()
     __simulation = get_boolean_or_default(plugin_name, 'Simulation', False)
-    __http_debug_enabled = get_boolean_or_default(plugin_name, 'httpDebug', False)
+
+    __http_debug = get_boolean_or_default('DEFAULT', 'httpDebug', False)
 
     __section = __config[plugin_name]
     __username = __section['username']
     __password = __section['password']
     __location = get_string_or_default(plugin_name, 'Location', None)
+    if __location is None:
+        __logger.debug('No location specified, will use the first by default')
+    else:
+        __logger.debug(f'Using location: {__location}')
+
     __hotwater = __section['HotWater']
     __hotwater_setpoint = get_float_or_default(plugin_name, 'HotWaterSetPoint', None)
 
 except Exception as config_ex:
     __logger.error(f'Error reading config:\n{config_ex}')
     __invalid_config = True
+
 
 class EvohomeMultiLocationClient(EvohomeClient):
     """
@@ -45,13 +54,14 @@ class EvohomeMultiLocationClient(EvohomeClient):
         super(EvohomeMultiLocationClient, self).__init__(username, password, debug, refresh_token, access_token, access_token_expires)
         self.__logger = get_plugin_logger(f'{plugin_name}:{self.__class__.__name__}')
 
+
     def get_location(self, locationId=None):
         """
         Get the location with the supplied name or id, or the first if none is specified
         """
 
         if locationId is None or locationId == '':
-            self.__logger.debug('No location specified, returning the first one')
+            # No location specified, returning the first one
             return self.locations[0]
 
         actual_location = self._find_location_by_id(locationId)
@@ -61,6 +71,8 @@ class EvohomeMultiLocationClient(EvohomeClient):
 
         if actual_location is None:
             raise ValueError(f'No location found with the id or name "{locationId}"') from None
+
+        self.__logger.debug(f'Location {actual_location} found')
         return actual_location
 
 
@@ -111,6 +123,15 @@ class EvohomeMultiLocationClient(EvohomeClient):
         return matching_locations[0]
 
 
+def __get_raw_data(client):
+    """
+    Get the same temp data that EvoClient pulls back for debugging/error diagnostics
+    """
+    location =  client.get_location(__location)
+    r = requests.get('https://tccna.honeywell.com/WebAPI/emea/api/v1/location/%s/status?includeTemperatureControlSystems=True' % location.locationId, headers=client._headers())
+    return r.text
+
+
 def __is_hotwater_on(client) -> bool:
     """
     Determines if the hot water is on or not
@@ -130,7 +151,7 @@ def __get_evoclient():
     Returns an instance of an Evohome client which caches credentials
     """
 
-    # The Evohome client library turns off global debugging  it so we need to re-enable!
+    # The Evohome client library turns off global debugging so save the value incase we need to re-enable!
     global_debug = logging.getLogger().isEnabledFor(logging.DEBUG)
     try:
         # Actually getting a token is rate-limited, though using it is not.
@@ -148,9 +169,13 @@ def __get_evoclient():
         access_token_expires = None
         __logger.debug('No cached credentials available')
 
-    client = EvohomeMultiLocationClient(__username, __password, debug=__http_debug_enabled, refresh_token=refresh_token, access_token=access_token, access_token_expires=access_token_expires)
+    client = EvohomeMultiLocationClient(__username, __password, debug=is_debugging_enabled(plugin_name) , refresh_token=refresh_token, access_token=access_token, access_token_expires=access_token_expires)
     if global_debug:
         logging.getLogger().setLevel(logging.DEBUG)
+
+    # EvohomeClient turns on http debug logging if debug is set - we only want it if we have http debug enabled
+    if is_debugging_enabled(plugin_name) == True and __http_debug == False:
+        http.client.HTTPConnection.debuglevel = 0
 
     # save session-id's so we don't need to re-authenticate every polling cycle.
     with io.open(__token_file, "w", encoding='UTF-8') as f:
@@ -190,51 +215,62 @@ def read():
     if not __simulation:
 
         try:
-            if __location is None:
-                __logger.debug('No location specified, will use the first by default')
-            else:
-                __logger.debug(f'Getting data for location: {__location}')
-
-            zones = client.get_heating_system(__location).temperatures()
+            heating_system = client.get_heating_system(__location)
+            zones = heating_system.temperatures()
         except Exception as e:
             __logger.exception(f'EvoHome API error getting temperatures - aborting\n{e}')
             return []
 
-        for zone in zones:
-            # normalise response for DHW to be consistent with normal zones
-            if zone['thermostat'] == 'DOMESTIC_HOT_WATER':
-                zone['name'] = __hotwater
-                if __is_hotwater_on(client):
-                    if __hotwater_setpoint is not None:
-                        zone['setpoint'] = __hotwater_setpoint
+        while True:
+            try:
+                zone = next(zones)
+                if isinstance(zone, KeyError):
+                    if heating_system.hotwater is not None:
+                        __logger.exception(f'EvoHome API key error getting temperatures - could be hot water- status: {heating_system.hotwater.temperatureStatus} - skipping\n{zone}\nraw_data={__get_raw_data(client)}')
+                    else:
+                        __logger.exception(f'EvoHome API key error getting temperatures - skipping\n{zone}\nraw_data={__get_raw_data(client)}')
                 else:
-                    zone['setpoint'] = 0.0
-
-            text_temperatures += f'{zone["name"]} ({zone["temp"]} A'
-
-            # Handle a bug mentioned here https://www.automatedhome.co.uk/vbulletin/showthread.php?4696-Beginners-guide-to-graphing-Evohome-temperatures-using-python-and-plot-ly/page6
-            # Not sure if 128 is reported or not a number at all so deal with both...
-
-            def temp_or_default(raw_temp):
-                DEFAULT_TEMP = 0.0
-                try:
-                    temp = float(raw_temp)
-                    if temp == 128.0:
-                        __logger.warning(f'No temperature returned for Zone: {zone["name"]} - returning default ({DEFAULT_TEMP}')
-                        return DEFAULT_TEMP
-                    return temp
-                except Exception:
-                    __logger.exception(f'Error converting "{raw_temp}" to a float, returning default ({DEFAULT_TEMP}')
-                    return DEFAULT_TEMP
-
-            if zone['setpoint'] != '' and zone['setpoint'] is not None:
-                temp = Temperature(zone['name'], temp_or_default(zone['temp']), temp_or_default(zone['setpoint']))
-                text_temperatures += f', {zone["setpoint"]} T'
+                    if isinstance(zone, Exception):
+                        __logger.exception(f'EvoHome API error getting temperatures - skipping\n{zone}\nraw_data={__get_raw_data(client)}')
+            except StopIteration:
+                break
+            except Exception as ex:
+                __logger.exception(f'EvoHome API error getting temperatures - skipping\n{ex}\nraw_data={__get_raw_data(client)}')
             else:
-                temp = Temperature(zone['name'], temp_or_default(zone['temp']))
-            text_temperatures += ') '
-            temperatures.append(temp)
-            __logger.debug(text_temperatures)
+                for zone in zones:
+                    # normalise response for DHW to be consistent with normal zones
+                    if zone['thermostat'] == 'DOMESTIC_HOT_WATER':
+                        zone['name'] = __hotwater
+                        if __is_hotwater_on(client):
+                            if __hotwater_setpoint is not None:
+                                zone['setpoint'] = __hotwater_setpoint
+                        else:
+                            zone['setpoint'] = 0.0
+
+                    text_temperatures += f'{zone["name"]} ({zone["temp"]} A'
+
+                    # Handle a bug mentioned here https://www.automatedhome.co.uk/vbulletin/showthread.php?4696-Beginners-guide-to-graphing-Evohome-temperatures-using-python-and-plot-ly/page6
+                    # Not sure if 128 is reported or not a number at all so deal with both...
+                    def temp_or_default(raw_temp):
+                        DEFAULT_TEMP = 0.0
+                        try:
+                            temp = float(raw_temp)
+                            if temp == 128.0:
+                                __logger.warning(f'No temperature returned for Zone: {zone["name"]} - returning default ({DEFAULT_TEMP}')  # pylint disable=W0640
+                                return DEFAULT_TEMP
+                            return temp
+                        except Exception:
+                            __logger.exception(f'Error converting "{raw_temp}" to a float, returning default ({DEFAULT_TEMP}')
+                            return DEFAULT_TEMP
+
+                    if zone['setpoint'] != '' and zone['setpoint'] is not None:
+                        temp = Temperature(zone['name'], temp_or_default(zone['temp']), temp_or_default(zone['setpoint']))
+                        text_temperatures += f', {zone["setpoint"]} T'
+                    else:
+                        temp = Temperature(zone['name'], temp_or_default(zone['temp']))
+                    text_temperatures += ') '
+                    temperatures.append(temp)
+                    __logger.debug(text_temperatures)
     else:
         # Return some random temps if simulating a read
         temperatures = [Temperature("Lounge", round(random.uniform(12.0, 28.0), 1), 22.0),

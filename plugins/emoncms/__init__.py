@@ -1,12 +1,10 @@
 """
 EMON CMS output plugin
 """
-# pylint: disable=C0103,W0703
 
-import urllib.request
-import urllib.error
 import sys
 import time
+import requests
 from config_helper import *
 
 plugin_name = "Emoncms"
@@ -51,7 +49,7 @@ def write(timestamp, temperatures):
         text_temperatures += f'{temperature.zone} ({temperature.actual} A'
         if temperature.target is not None:
             url += f'{temperature.zone} Target: {str(temperature.target)},'
-            text_temperatures += f', {temperature.target} T) ' 
+            text_temperatures += f', {temperature.target} T) '
 
     url += '}'
     url = url.replace(",}", "}")
@@ -63,13 +61,14 @@ def write(timestamp, temperatures):
             __logger.info("[SIMULATED] %s", text_temperatures)
         else:
             __logger.debug(text_temperatures)
-            __logger.debug('URL:' + url)
-            with urllib.request.urlopen(url) as response:
-                __logger.debug(f'Emon API response: {response.status} {response.read().decode()}')
-    except urllib.error.HTTPError as e:
-        __logger.exception(f'Emon API HTTPError - aborting write\n{e.read().decode()}')
+            __logger.debug('URL: %s',url)
+            with requests.get(url) as response:
+                __logger.debug(f'Emon API response from {url}: {response.status_code} {response.reason} {response.content}') # pylint disable=W1201
+                response.raise_for_status()
+    except requests.HTTPError as e:
+        __logger.exception(f'Emon API HTTPError from {url}: {response.status_code} {response.reason} - aborting write\nError: {e}')
     except Exception as e:
-        __logger.exception(f'Emon API error - aborting write\n{e}')
+        __logger.exception(f'Emon API error writing to {url} - aborting write\nError: {e}')
 
 
 # if called directly then this is what will execute

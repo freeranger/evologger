@@ -1,15 +1,17 @@
 """
 Netatmo input plugin - for getting the outside temperature
 """
-# pylint: disable=C0103,C0301,W0212,W0703
+# pylint: disable=W0212
 
 from datetime import datetime,timedelta
 import io
-from json import dump,load,loads
+from json import dump,load
 import random
 import ssl
 from tempfile import gettempdir
-from urllib import error,parse,request
+from urllib import parse
+import requests
+
 from config_helper import *
 from Temperature import *
 
@@ -23,9 +25,9 @@ __OUTDOOR_MODULE_TYPE = 'NAModule1' # Outdoor module type
 __logger = get_plugin_logger(plugin_name)
 __invalid_config = False
 
+
 try:
     __config = get_config()
-
     __simulation = get_boolean_or_default(plugin_name, 'Simulation', False)
 
     __section = __config[plugin_name]
@@ -63,22 +65,24 @@ except Exception as config_ex:
     __invalid_config = True
 
 def _post_request(url: str, request_params):
-    req = request.Request(f'https://api.netatmo.com/{url}', headers = {
-        'Content-Type': 'application/x-www-form-urlencoded;charset=utf-8'
-    })
-
+    full_url = f'https://api.netatmo.com/{url}'
     params = parse.urlencode(request_params).encode('utf-8')
-    __logger.debug("%s %s", req.get_method(), req.full_url)
+    __logger.debug(full_url)
     try:
-        with request.urlopen(req, params, timeout=30) as response:
-            data = response.read()
-            encoding = response.info().get_content_charset('utf-8')
-            return loads(data.decode(encoding))
-    except error.HTTPError as err:
-        __logger.exception("Netatmo API request to %s failed - code=%s, reason=%s", url, err.code, err.reason)
+        with requests.post(full_url, headers= {
+                    'Content-Type': 'application/x-www-form-urlencoded;charset=utf-8'
+                },
+                data=params, timeout=30) as response:
+            response.raise_for_status()
+            return response.json()
+    except requests.HTTPError as err:
+        __logger.exception(f'HTTPError at {full_url} - {err.response.status_code} {err.response.reason} {err.response.json()} - aborting read\nError: {err}')
         return None
-    except Exception as ex:
-        __logger.exception("Exception processing request to %s - %s", url, str(ex))
+    except Exception as e:
+        if hasattr(e, 'response'):
+            __logger.exception(f'Error at {full_url} {e.response.status_code} {e.response.reason} {e.response.json()} - aborting read\nError: {e}')
+        else:
+            __logger.exception(f'Error at {full_url}\nError:{e}')
         return None
 
 
@@ -238,8 +242,8 @@ def read():
         except Exception:
             __logger.exception('Failed to parse station/module data from %s', response)
 
-    except error.HTTPError as e:
-        __logger.exception(f'Netatmo API HTTPError - aborting write\n{e.read().decode()}')
+    except requests.HTTPError as e:
+        __logger.exception(f'Netatmo API HTTPError - aborting read\n{e}')
     except Exception as e:
         __logger.exception(f'Netatmo API error - aborting read:\n{e}')
 

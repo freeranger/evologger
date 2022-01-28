@@ -1,9 +1,10 @@
 """
 InfluxDB v1.x input plugin
 """
-# pylint: disable=C0103,C0301,W0406,W0703
+# pylint: disable=W0406
 
 import sys
+import urllib.parse
 from influxdb import InfluxDBClient, exceptions
 from config_helper import *
 
@@ -106,11 +107,11 @@ def write(timestamp, temperatures):
             __logger.debug(debug_row_text)
             __logger.debug('Writing all zone measurements to influx...')
             influx_client.write_points(data)
-    except exceptions.InfluxDBClientError as e:
-        __logger.exception(f'Influx DB error - aborting write\n{e}')
-        raise
     except Exception as e:
-        __logger.exception(f'Error - aborting write\n{e}')
+        if hasattr(e, 'request'):
+            __logger.exception(f'Error Writing to {__database} at {__hostname}:{__port} - aborting write.\nRequest: {e.request.method} {urllib.parse.unquote(e.request.url)}\nBody: {e.request.body}.\nResponse: {e.response}\nError:{e}')
+        else:
+            __logger.exception(f'Error Writing to {__database} at {__hostname}:{__port} - aborting write\nError:{e}')
 
 
 # if called directly then this is what will execute

@@ -1,11 +1,9 @@
 """
 InfluxDB v2.x input plugin
 """
-# pylint: disable=C0103,C0301,W0703
 
 import sys
 from influxdb_client import InfluxDBClient, Point
-from influxdb_client.client.exceptions import InfluxDBError
 from influxdb_client.client.write_api import SYNCHRONOUS
 from config_helper import *
 
@@ -101,15 +99,15 @@ def write(timestamp, temperatures):
             __logger.debug(debug_row_text)
             __logger.debug('Writing all zone measurements to influx...')
             write_api.write(bucket=__bucket, record=data)
-    except InfluxDBError as e:
-        __logger.exception(f'Influx DB error - aborting write\n{e}')
-        if e.response.status == 401:
-            __logger.exception(f'Insufficient write permissions to Bucket: "{__bucket}" - aborting write\n{e}')
-            raise Exception(f'Insufficient write permissions to Bucket: {__bucket}.') from e
-        __logger.exception(f'Influx DB error - aborting write\n{e}')
-        raise
     except Exception as e:
-        __logger.exception(f'Error - aborting write\n{e}')
+        if hasattr(e, 'response'):
+            if e.response.status == 401:
+                __logger.exception(f'Insufficient write permissions to Bucket: "{__bucket}" - aborting write\nError:{e}')
+            else:
+                __logger.exception(f'Error Writing to {__bucket} at {__hostname}:{__port} - aborting write.\nResponse: {e.body.json()}\nError:{e}')
+            return
+        __logger.exception(f'Error Writing to {__bucket} at {__hostname}:{__port} - aborting write\nError:{e}')
+
 
 
 # if called directly then this is what will execute

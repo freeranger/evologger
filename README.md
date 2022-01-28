@@ -4,29 +4,36 @@
 
 To allow you to read your actual and desired temperatures from your [EvoHome](http://www.honeywelluk.com/products/Systems/Zoned/evohome-Main/) system (and others) and log them to a variety of destinations.
 
-Destinations include "data stores" such as .csv files or influxdb database for further ingestion by Excel or [grafana](https://grafana.net) respectively, or directly to graphing websites such as [Plot.ly](http://plot.ly.com) and [emoncms](https://emoncms.org)
+Destinations include "data stores" such as .csv files or influxdb database for further ingestion by Excel or [grafana](https://grafana.net) respectively, or directly to graphing websites such as [emoncms](https://emoncms.org)
 
 ## Getting Started
 1. Clone the entire repo to your preferred location.
-2. Configure the global settings in the `[DEFAULT]` section of `config.ini` 
+2. Configure the global settings in the `[DEFAULT]` section of `config.ini`
 3. Configure each plugin in `config.ini` according to your needs - see the `README.md` file with each plugin for details on how to configure it.
    All plugins live in the "plugins" folder - you can delete ones you don't want (and remove the relevant `config.ini` section) or add `disabled` to the relevant `config.ini` section to explicitly disable it
-4. run it!  
+4. run it!
    - Locally
-      - `pip3 install -r requirements.txt` to add the required python packages (for all plugins)   
+      - `pip3 install -r requirements.txt` to add the required python packages (for all plugins)
       - `python3 evologger.py` to start the application (add -h for help)
    - In Docker
       - See below to run in Docker
 
 ## Running in Docker
-A `Dockerfile` is included so you can run evologger in a Docker container if you wish.
+A Docker image is available that you can download and run `docker pull freeranger/evologger`
+You will need to map your own configuration file into the container as the built in one is not configured.
+You may also for example map a volume/file for csv output rather than storing in the container volume.
+
+It is beyond the scope of this document to describe how to use docker but as an example you could do something like this:
+`docker run --rm -it -v $(pwd)/config.docker.ini:/evologger/config.ini freeranger/evologger`
+
+which will map the file config.docker.ini in the current folder into the running container
+
+The `Dockerfile` is included in this repo so you can build and run the container locally if you wish:
 From the source folder:
 1. `docker build -t evologger .`
 2. Run:
    - `docker run --rm -it evologger` (to run in the foregound with coloured output)
    -  `docker run --rm -d evologger` (to run in detached mode)
-
-It is beyond the scope of this document to describe how to use docker but you could map the `config.ini` file into the container so you just need to restart with a new config, and you can map a volume/file for csv output rather than storing in the container volume.
 
 **Note** If you are running services in other containers on the same host that you wish to accerss (e.g. Influx) then you need to use `host.docker.internal` in place of the host name or IP you would otherwise use - or you could use a docker compose file and ensure they are in the same docker network
 
@@ -34,11 +41,12 @@ It is beyond the scope of this document to describe how to use docker but you co
 ## [DEFAULT] config.ini settings
 ```
 [DEFAULT]
-debug=<true|false>      - If true then output debugging statements.
 pollingInterval=600     - Frequency in seconds to read temperatures from input plugins and write them to the output plugins.  0 => do once, then exit
                           It is recommended that this is set to no less than 5 minutes as some of the api's used by plugins (e.g. plot.ly) limit the numer of api calls you can make per day.
 Outside=<zone name>     - Name you want to use for your outside "zone" (if you have one) when reading the external temperature - used by some input plugins, e.g. darksky.net, netatmo
 HotWater=Hot Water      - Name you want to use for the Hot Water "zone" (if you have one) when reading the temperature - used by some plugins, e.g. evohome, console
+debug=<true|false>      - If true then output/log debug level info.  This must be true to debug into plugins too
+httpDebug=<true|false>  - IF trye then http requests/responses are logged at the debug level
 ```
 
 ## Plugins
@@ -66,8 +74,8 @@ All plugins support the following options in `config.ini`:
 
 ```
 disabled=<true|false>   - If true then the plugin is disabled completely and will never be invoked
-simulation=<true|false> - if true then input plugins will return random values rather than contacting the 
-                          source whilst output plugins will write to the debug log but not the actual 
+simulation=<true|false> - if true then input plugins will return random values rather than contacting the
+                          source whilst output plugins will write to the debug log but not the actual
                           destination.  Default: false if not present
 debug=<true|false>      - If true then write to the debug log.  If not present then follows the debug setting
                           in the [DEFAULT] section of the config file.  If present and false (the only time it
@@ -76,7 +84,7 @@ debug=<true|false>      - If true then write to the debug log.  If not present t
 ```
 
 #### Creating your own plugins
-Plugins come in two flavours - input plugins and output plugins. 
+Plugins come in two flavours - input plugins and output plugins.
 Input plugins are sources of temperature data and output plugins are where you record that data.
 
 The simplest way to get started with your own plugin is to look at one of the existing ones - eg. darksky.net for input or csv for output.
@@ -98,14 +106,14 @@ There are a few rules you must follow for your plugin:
 
 ## Limitations
 * Only a single EvoHome location is currently supported (you can specify which one if you have multiple locations)
-* In theory this should work as a scheduled job (cron|launchd|whatever windows uses) but I have no idea how to get the scheduled "environment" to pick up the same python 
+* In theory this should work as a scheduled job (cron|launchd|whatever windows uses) but I have no idea how to get the scheduled "environment" to pick up the same python
   settings/config as a conole app for a logged on user picks up (various attempts failed) so I just run it in a console window and leave it open.
-  
-  
+
+
 ## Changelog
 ### 2.1.0 (2021-01-82)
 - Netatmo plugin added (v 1.0.0)
-- Fix changelog dates 
+- Fix changelog dates
 - get_string_or_default will select from the DEFAULT section if an empty key exists in the plugin section
 - read_temperatures sorts the temps using the actual configured OutsideZone name and not hard coded 'Outside'
 - Evohome plugin updated (v 2.0.1)
@@ -125,5 +133,5 @@ Initial release
 
 
 ---
-**Disclaimer**  
-I am not a Python programmer - this is probably awful python code, but it works for me - use at your own risk.  
+**Disclaimer**
+I am not a Python programmer - this is probably awful python code, but it works for me - use at your own risk.

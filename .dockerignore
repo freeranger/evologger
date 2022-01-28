@@ -1,0 +1,13 @@
+.git
+.vscode
+.DS_Store
+.gitignore
+.pylintrc
+.pytest_cache
+.dockerignore
+Dockerfile
+**/__pycache__
+tests
+*.log
+*.html
+*.sh

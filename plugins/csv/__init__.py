@@ -1,7 +1,7 @@
 """
 CSV file output plugin
 """
-# pylint: disable=C0103,R1732,W0406,W0703
+# pylint: disable=E1101,R1732,W0406
 
 import csv
 import os.path
@@ -23,10 +23,11 @@ except Exception as config_ex:
     __logger.exception(f'Error reading config:\n{config_ex}')
     __invalid_config = True
 
+
 def write(timestamp, temperatures):
     """
     Writes the temperatures to the configured file
-    """    
+    """
     if __invalid_config:
         __logger.warning('Invalid config, aborting write')
         return

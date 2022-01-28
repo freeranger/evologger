@@ -4,17 +4,20 @@
 EvoHome loging application
 Reads temperatures from configured input plugins and writes them to configured output plugins
 """
-# pylint: disable=C0103,C0301,R0912,R0915,W0703
+# pylint: disable=R0912,R0915,W0603
 
 from datetime import datetime
 import getopt
-import logging
+import http
+import logging.config
 import signal
 import sys
 import time
-import coloredlogs
-from config_helper import get_config, get_string_or_default, is_debugging_enabled
+import requests # we need to import requests even though it is not explicitly used so we get access to http.client
+import structlog
+from config_helper import get_config, get_boolean_or_default, get_string_or_default, is_debugging_enabled
 from pluginloader import PluginLoader
+
 
 logger = None
 plugins = None
@@ -42,6 +45,90 @@ def handle_signal(sig, _):
 
 signal.signal(signal.SIGINT, handle_signal)
 signal.signal(signal.SIGTERM, handle_signal)
+
+
+def configure_logging(log_level):
+    """
+    Configures logging using structlog
+    """
+    timestamper = structlog.processors.TimeStamper(fmt="%Y-%m-%d %H:%M:%S")
+    pre_chain = [
+        # Add the log level and a timestamp to the event_dict if the log entry
+        # is not from structlog.
+        structlog.stdlib.add_log_level,
+        structlog.stdlib.add_logger_name,
+        # Add extra attributes of LogRecord objects to the event dictionary
+        # so that values passed in the extra parameter of log methods pass
+        # through to log output.
+        structlog.stdlib.ExtraAdder(),
+        timestamper,
+    ]
+    logging.config.dictConfig({
+        "version": 1,
+        "disable_existing_loggers": False,
+        "formatters": {
+            "plain": {
+                "()": structlog.stdlib.ProcessorFormatter,
+                "processors": [
+                   structlog.stdlib.ProcessorFormatter.remove_processors_meta,
+                   structlog.dev.ConsoleRenderer(colors=False),
+                ],
+                "foreign_pre_chain": pre_chain,
+            },
+            "colored": {
+                "()": structlog.stdlib.ProcessorFormatter,
+                "processors": [
+                   structlog.stdlib.ProcessorFormatter.remove_processors_meta,
+                   structlog.dev.ConsoleRenderer(colors=True),
+                ],
+                "foreign_pre_chain": pre_chain,
+            },
+        },
+        "handlers": {
+            "default": {
+                "level": logging.getLevelName(log_level),
+                "class": "logging.StreamHandler",
+                "formatter": "colored",
+            },
+            "file": {
+                "level": logging.getLevelName(logging.DEBUG),
+                "class": "logging.handlers.WatchedFileHandler",
+                "filename": "evologger.log",
+                "formatter": "plain",
+            },
+        },
+        "loggers": {
+            "": {
+                "handlers": ["default", "file"],
+                "level": "DEBUG",
+                "propagate": True,
+            },
+        }
+    })
+
+    structlog.configure(
+        processors=[
+            structlog.stdlib.add_log_level,
+            structlog.stdlib.PositionalArgumentsFormatter(),
+            timestamper,
+            structlog.processors.StackInfoRenderer(),
+            structlog.processors.format_exc_info,
+            structlog.stdlib.ProcessorFormatter.wrap_for_formatter,
+        ],
+        logger_factory=structlog.stdlib.LoggerFactory(),
+        wrapper_class=structlog.stdlib.BoundLogger,
+        cache_logger_on_first_use=True,
+    )
+
+    global logger
+    logger = structlog.get_logger('evohome-logger')
+
+    if get_boolean_or_default('DEFAULT', 'httpDebug', False) is True:
+        http_logger = structlog.get_logger('http-logger')
+        def print_http_debug_to_log(*args):
+            http_logger.debug(" ".join(args))
+        http.client.HTTPConnection.debuglevel = 5
+        http.client.print = print_http_debug_to_log
 
 
 def read_temperatures():
@@ -131,15 +218,7 @@ def main(argv):
         elif opt in ('-d', '--debug'):
             debug_logging = True
 
-    if debug_logging or is_debugging_enabled('DEFAULT'):
-        logging.basicConfig(level=logging.DEBUG)
-        coloredlogs.install(level='DEBUG')
-    else:
-        logging.basicConfig(level=logging.INFO)
-        coloredlogs.install(level='INFO')
-
-    global logger
-    logger = logging.getLogger('evohome-logger::')
+    configure_logging(logging.DEBUG if debug_logging or is_debugging_enabled('DEFAULT') else logging.INFO)
 
     logger.info("==Started==")
 

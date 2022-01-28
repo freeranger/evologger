@@ -1,11 +1,10 @@
 """
 DarkSky input plugin - for getting the outside temperature
 """
-# pylint: disable=C0103,W0703
 
 from datetime import datetime
 import random
-import urllib.error
+import urllib.parse
 import forecastio
 from config_helper import *
 from Temperature import *
@@ -32,11 +31,12 @@ except Exception as config_ex:
     __logger.exception(f'Error reading config:\n{config_ex}')
     __invalid_config = True
 
+# pylint disable=E1101
 def read():
     """
     Reads the outside temperature from DarkSky
-    """    
-    
+    """
+
     if __invalid_config:
         __logger.debug('Invalid config, aborting read')
         return []
@@ -49,10 +49,11 @@ def read():
     if not __simulation:
         try:
             forecast = forecastio.load_forecast(__api_key, __latitude, __longitude)
-        except urllib.error.HTTPError as e:
-            __logger.exception(f'DarkSky API HTTPError - aborting write\n{e.read().decode()}')
         except Exception as e:
-            __logger.exception(f'DarkSky API error - aborting read:\n{e}')
+            if hasattr(e, 'request'):
+                __logger.exception(f'DarkSky API Error reading from {e.request.method} {urllib.parse.unquote(e.request.url)}\nResponse: {e.response.json()}\nError:{e}')
+            else:
+                __logger.exception(f'DarkSky API error - aborting read:\n{e}')
             return []
 
         temp = round(forecast.currently().temperature, 1)

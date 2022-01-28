@@ -1,7 +1,6 @@
 """
 Helpers for configuring the app/plugins
 """
-# pylint: disable=C0103,C0301,W0703
 
 from configparser import ConfigParser
 import logging
@@ -92,6 +91,6 @@ def get_plugin_logger(plugin_name: str) -> logging.Logger:
     """
     Gets a logger for the supplied plugin
     """
-    logger = logging.getLogger(f'{plugin_name}-plugin:')
+    logger = logging.getLogger(f'{plugin_name}-plugin')
     logger.setLevel(logging.DEBUG if is_debugging_enabled(plugin_name) else logging.INFO)
     return logger
