@@ -7,6 +7,7 @@
 .dockerignore
 Dockerfile
 pytest.ini
+requirements.test.txt
 **/__pycache__
 tests
 *.log

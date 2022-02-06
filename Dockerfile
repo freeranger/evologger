@@ -10,4 +10,6 @@ COPY ./ ./
 
 RUN pip install -r requirements.txt
 
+RUN rm ./requirements.txt
+
 CMD [ "python", "./evologger.py" ]
