@@ -48,6 +48,7 @@ def _get_zone_measurements(time, zone, actual, target, logger):
 
 
 class Plugin(OutputPluginBase):
+    """InfluxDB v1.x output Plugin immplementation"""
 
     def _read_configuration(self, config: AppConfig):
         section = config[self.plugin_name]

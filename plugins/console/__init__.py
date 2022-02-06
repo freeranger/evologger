@@ -6,7 +6,7 @@ from AppConfig import AppConfig
 from plugins.PluginBase import OutputPluginBase
 
 class Plugin(OutputPluginBase):
-
+    """Console output Plugin immplementation"""
     def _read_configuration(self, config: AppConfig):
         self._hot_water = config.get_string_or_default('DEFAULT', 'HotWater', None)
 
@@ -34,4 +34,3 @@ class Plugin(OutputPluginBase):
             print (text_temperatures)
 
         return text_temperatures
-

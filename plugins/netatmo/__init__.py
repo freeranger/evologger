@@ -42,7 +42,6 @@ def _post_request(url: str, request_params, logger):
             logger.exception(f'Error at {full_url}\nError:{e}')
         return None
 
-
 # pylint: disable=R0903
 class ModuleNotFound(Exception):
     """
@@ -56,6 +55,7 @@ class Authenticate:
     Manages Netatmo authentication tokens
     """
 
+    # pylint: disable=too-many-arguments
     def __init__(self, config: AppConfig, plugin_name, client_id: str, client_secret: str, username: str, password: str) -> None:
         self._logger = _get_plugin_logger(config, f'{plugin_name}:{self.__class__.__name__}')
         self._token_file = f'{gettempdir()}/{plugin_name}.access_tokens.json'
@@ -126,6 +126,7 @@ class Authenticate:
 
 
 class Plugin(InputPluginBase):
+    """Netatmo outdoor module input Plugin immplementation"""
 
     def _read_configuration(self, config: AppConfig):
         self._config = config

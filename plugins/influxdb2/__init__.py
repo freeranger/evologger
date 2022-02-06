@@ -39,6 +39,7 @@ def _get_zone_measurements(time, zone, actual, target, logger):
 
 
 class Plugin(OutputPluginBase):
+    """InfluxDB v2.x output Plugin immplementation"""
 
     def _read_configuration(self, config: AppConfig):
         section = config[self.plugin_name]
@@ -90,7 +91,7 @@ class Plugin(OutputPluginBase):
                     self._logger.exception(f'Insufficient write permissions to Bucket: "{self._bucket}" - aborting write\nError:{e}')
                 else:
                     self._logger.exception(f'Error Writing to {self._bucket} at {self._hostname}:{self._port} - aborting write.\nResponse: {e.body.json()}\nError:{e}')
-                return
+                return text_temperatures
             self._logger.exception(f'Error Writing to {self._bucket} at {self._hostname}:{self._port} - aborting write\nError:{e}')
 
         return text_temperatures

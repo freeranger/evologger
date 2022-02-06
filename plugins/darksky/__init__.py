@@ -11,6 +11,7 @@ from plugins.PluginBase import InputPluginBase
 from Temperature import *
 
 class Plugin(InputPluginBase):
+    """DarkSky input Plugin immplementation"""
 
     def _read_configuration(self, config: AppConfig):
         section = config[self.plugin_name]
@@ -39,7 +40,7 @@ class Plugin(InputPluginBase):
                     self._logger.exception(f'DarkSky API error - aborting read:\n{e}')
                 return []
 
-            temp = round(forecast.currently().temperature, 1)
+            temp = round(forecast.currently().temperature, 1) # pylint: disable=no-member
         else:
             temp = round(random.uniform(12.0, 23.0), 1)
 

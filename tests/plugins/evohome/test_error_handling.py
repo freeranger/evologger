@@ -1,4 +1,3 @@
-from turtle import st
 import httpretty
 import json
 import pytest
@@ -25,6 +24,7 @@ def target():
     httpretty.disable()  # disable afterwards, so that you will have no problems in code that uses that socket module
     httpretty.reset()
 
+@pytest.mark.unit
 @pytest.mark.parametrize('status', [ 400, 429, 500, 503 ])
 def test_no_data_is_returned_if_authentication_fails(status, target):
     # Arrange
@@ -38,6 +38,7 @@ def test_no_data_is_returned_if_authentication_fails(status, target):
     # Assert
     assert not actual is True
 
+@pytest.mark.unit
 @pytest.mark.parametrize('status', [ 400, 429, 500, 503 ])
 def test_no_data_is_returned_if_retrieving_location_info_fails(status, target):
     # Arrange
@@ -57,6 +58,7 @@ def test_no_data_is_returned_if_retrieving_location_info_fails(status, target):
     # Assert
     assert not actual is True
 
+@pytest.mark.unit
 @pytest.mark.parametrize('status', [ 400, 429, 500, 503 ])
 def test_no_data_is_returned_if_retrieving_status_info_fails(status, target):
     # Arrange

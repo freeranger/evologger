@@ -13,10 +13,12 @@ class TestSingleInstallation(TestBase):
         self.target = Plugin(AppConfig(mock_data_file(self.ini_file_name)))
         assert self.target._invalid_config is False
 
+    @pytest.mark.unit
     def test_can_read_temperatures(self):
         actual = self.target.read()
         assert len(actual) == 6, 'Expected 6 Temps (5 rooms + HW)'
 
+    @pytest.mark.unit
     def test_hot_water_temp_is_returned_for_a_location_with_hot_water(self):
         temperatures = self.target.read()
         hot_water = [x for x in temperatures if x.zone == "Hot Water"]

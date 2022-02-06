@@ -9,6 +9,7 @@ from AppConfig import AppConfig
 from plugins.PluginBase import OutputPluginBase
 
 class Plugin(OutputPluginBase):
+    """EMON CMS output Plugin immplementation"""
 
     def _read_configuration(self, config: AppConfig):
         api_key = config.get(self.plugin_name, "apiKey")

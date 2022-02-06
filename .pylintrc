@@ -1,5 +1,12 @@
 [MASTER]
 ignore=Dockerfile,LICENSE,README.md,config.ini,requirements.txt,publish.sh,tests
 
+# Ignore all these file types
+ignore-patterns=^.*\.ini,
+                ^.*\.sh,
+                ^.*\.csv,
+                ^.*\.txt,
+                ^.*\.json
+
 [MESSAGES CONTROL]
-disable=C0103,C0301,W0703,W1203
+disable=C0103,C0301,W0703,W1203,too-few-public-methods

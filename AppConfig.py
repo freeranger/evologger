@@ -3,10 +3,11 @@ Helpers for configuring the app/plugins
 """
 
 from configparser import ConfigParser
-import logging
 
 
 class AppConfig(ConfigParser):
+    """Application Configuration"""
+
     def __init__(self, config_file) -> None:
         super().__init__(allow_no_value=True, inline_comment_prefixes=";")
         self.read(config_file)

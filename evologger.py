@@ -13,7 +13,7 @@ import logging.config
 import signal
 import sys
 import time
-import requests # we need to import requests even though it is not explicitly used so we get access to http.client
+import requests # pylint: disable=unused-import # we need to import requests even though it is not explicitly used so we get access to http.client
 import structlog
 from AppConfig import AppConfig
 from pluginloader import PluginLoader

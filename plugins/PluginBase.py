@@ -45,13 +45,11 @@ class PluginBase(ABC):
 
 
 class InputPluginBase(PluginBase):
-
-    def __init__(self, config: AppConfig, plugin_name: str, plugin_type: str) -> None:
-        super().__init__(config, plugin_name, plugin_type)
+    """Base class for all Input plugins"""
 
     @abstractmethod
     def _read_temperatures(self):
-         """
+        """
         Subclass method to Read temperature(s) from an input source
         """
 
@@ -79,12 +77,11 @@ class InputPluginBase(PluginBase):
             return temperatures
         except Exception:
             self._logger.exception('Error reading temperatures, aborting read')
+            return []
 
 
 class OutputPluginBase(PluginBase):
-
-    def __init__(self, config: AppConfig, plugin_name: str, plugin_type: str) -> None:
-        super().__init__(config, plugin_name, plugin_type)
+    """Base class for all output plugins"""
 
     @abstractmethod
     def _write_temperatures(self, timestamp, temperatures) -> str:
@@ -93,7 +90,6 @@ class OutputPluginBase(PluginBase):
         Returns:
             string representation of the temperatures
         """
-        pass
 
     def write(self, timestamp, temperatures):
         """

@@ -9,6 +9,7 @@ from AppConfig import AppConfig
 from plugins.PluginBase import OutputPluginBase
 
 class Plugin(OutputPluginBase):
+    """CSV output Plugin immplementation"""
 
     def _read_configuration(self, config: AppConfig):
         self._filename = config.get(self.plugin_name, "filename")
@@ -31,7 +32,7 @@ class Plugin(OutputPluginBase):
                 csv_file = open(self._filename, 'a', encoding='UTF-8')
             except Exception as e:
                 self._logger.exception(f'Error opening {self._filename} for writing - aborting write\n{e}')
-                return
+                return ''
 
             writer = csv.writer(csv_file, delimiter=',', quoting=csv.QUOTE_MINIMAL)
 
@@ -60,7 +61,7 @@ class Plugin(OutputPluginBase):
                 text_temperatures += f', {temperature.target} T'
             text_temperatures += ') '
 
-        if self._simulation == False:
+        if self._simulation is False:
             writer.writerow(row)
             csv_file.close()
 
