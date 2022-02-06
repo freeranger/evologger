@@ -1,4 +1,4 @@
-# Evo Logger
+# Evo Logger [![Build Status](https://semaphoreci.com/api/v1/freeranger/evologger/branches/master/shields_badge.svg)](https://semaphoreci.com/freeranger/evologger)
 
 ## Purpose
 
