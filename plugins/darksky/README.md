@@ -9,7 +9,7 @@ Reads the outside temperature at your EvoHome location.
   `pip install python-forecastio`
 
   or, to upgrade your existing one:
-  
+
   `pip install python-forecastio --upgrade`
 
 ## config.ini settings
@@ -22,6 +22,8 @@ Outside=<name you want to call this "zone" - default "Outside"> - recommend this
 ```
 
 ## Changelog
+### 3.0.0 (2022-02-06)
+- Rewritten to use the new plugin model
 ### 2.0.0 (2021-12-28)
 - Upgraded to Python 3.9
 - Additional logging and bug fixes

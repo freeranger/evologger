@@ -5,85 +5,63 @@ CSV file output plugin
 
 import csv
 import os.path
-import sys
-from config_helper import *
+from AppConfig import AppConfig
+from plugins.PluginBase import OutputPluginBase
 
-plugin_name = "Csv"
-plugin_type = "output"
+class Plugin(OutputPluginBase):
 
-__logger = get_plugin_logger(plugin_name)
-__invalid_config = False
+    def _read_configuration(self, config: AppConfig):
+        self._filename = config.get(self.plugin_name, "filename")
 
-try:
-    __config = get_config()
-    __filename = __config.get(plugin_name, "filename")
-    __simulation = get_boolean_or_default(plugin_name, 'Simulation', False)
+    def __init__(self, config: AppConfig) -> None:
+        super().__init__(config, 'Csv', 'output')
 
-except Exception as config_ex:
-    __logger.exception(f'Error reading config:\n{config_ex}')
-    __invalid_config = True
+    def _write_temperatures(self, timestamp, temperatures):
+        """
+        Writes the temperatures to the configured file
+        """
 
+        csv_file = None
+        writer = None
 
-def write(timestamp, temperatures):
-    """
-    Writes the temperatures to the configured file
-    """
-    if __invalid_config:
-        __logger.warning('Invalid config, aborting write')
-        return
+        csv_write_headers = not self._simulation and not os.path.isfile(self._filename)
 
-    debug_message = f'Writing to {plugin_name} ({__filename})'
-    if __simulation:
-        debug_message += ' [SIMULATED]'
-    __logger.debug(debug_message)
+        if not self._simulation:
+            try:
+                csv_file = open(self._filename, 'a', encoding='UTF-8')
+            except Exception as e:
+                self._logger.exception(f'Error opening {self._filename} for writing - aborting write\n{e}')
+                return
 
-    csv_file = None
-    writer = None
+            writer = csv.writer(csv_file, delimiter=',', quoting=csv.QUOTE_MINIMAL)
 
-    csv_write_headers = not __simulation and not os.path.isfile(__filename)
+        if not self._simulation and csv_write_headers:
 
-    if not __simulation:
-        try:
-            csv_file = open(__filename, 'a', encoding='UTF-8')
-        except Exception as e:
-            __logger.exception(f'Error opening {__filename} for writing - aborting write\n{e}')
-            return
+            self._logger.debug(f'Creating {self._filename}')
 
-        writer = csv.writer(csv_file, delimiter=',', quoting=csv.QUOTE_MINIMAL)
+            fieldnames = ['Time']
+            for t in temperatures:
+                if t.target is not None:
+                    fieldnames.append(t.zone + ' [A]')
+                    fieldnames.append(t.zone + ' [T]')
+                else:
+                    fieldnames.append(t.zone)
 
-    if not __simulation and csv_write_headers:
+            writer.writerow(fieldnames)
 
-        __logger.debug(f'Creating {__filename}')
+        text_temperatures = ''
+        row = [timestamp]
+        for temperature in temperatures:
+            row.append(temperature.actual)
+            text_temperatures += f'{temperature.zone} ({temperature.actual} A'
 
-        fieldnames = ['Time']
-        for t in temperatures:
-            if t.target is not None:
-                fieldnames.append(t.zone + ' [A]')
-                fieldnames.append(t.zone + ' [T]')
-            else:
-                fieldnames.append(t.zone)
+            if temperature.target is not None:
+                row.append(temperature.target)
+                text_temperatures += f', {temperature.target} T'
+            text_temperatures += ') '
 
-        writer.writerow(fieldnames)
+        if self._simulation == False:
+            writer.writerow(row)
+            csv_file.close()
 
-    text_temperatures = f'{timestamp}: '
-    row = [timestamp]
-    for temperature in temperatures:
-        row.append(temperature.actual)
-        text_temperatures += f'{temperature.zone} ({temperature.actual} A'
-
-        if temperature.target is not None:
-            row.append(temperature.target)
-            text_temperatures += f', {temperature.target} T'
-        text_temperatures += ') '
-
-    if  __simulation:
-        __logger.info("[SIMULATED] %s", text_temperatures)
-    else:
-        __logger.debug(text_temperatures)
-        writer.writerow(row)
-        csv_file.close()
-
-
-# if called directly then this is what will execute
-if __name__ == "__main__":
-    write(sys.argv[1], sys.argv[2])
+        return text_temperatures

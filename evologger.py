@@ -15,7 +15,7 @@ import sys
 import time
 import requests # we need to import requests even though it is not explicitly used so we get access to http.client
 import structlog
-from config_helper import get_config, get_boolean_or_default, get_string_or_default, is_debugging_enabled
+from AppConfig import AppConfig
 from pluginloader import PluginLoader
 
 
@@ -23,9 +23,10 @@ logger = None
 plugins = None
 logging.raiseExceptions = True
 continue_polling = True
-outside_zone = get_string_or_default('DEFAULT', 'Outside', 'Outside')
+config = AppConfig('config.ini')
 
-config = get_config()
+outside_zone = config.get_string_or_default('DEFAULT', 'Outside', 'Outside')
+
 
 def handle_signal(sig, _):
     """
@@ -123,7 +124,7 @@ def configure_logging(log_level):
     global logger
     logger = structlog.get_logger('evohome-logger')
 
-    if get_boolean_or_default('DEFAULT', 'httpDebug', False) is True:
+    if config.get_boolean_or_default('DEFAULT', 'httpDebug', False) is True:
         http_logger = structlog.get_logger('http-logger')
         def print_http_debug_to_log(*args):
             http_logger.debug(" ".join(args))
@@ -141,7 +142,6 @@ def read_temperatures():
         if plugin is None:
             logger.error("plugin is none!: %s", i)
         else:
-            logger.debug("Reading temperatures from %s", plugin.plugin_name)
             try:
                 temps = plugin.read()
                 if not temps:
@@ -179,7 +179,6 @@ def publish_temperatures(temperatures):
 
         for i in plugins.outputs:
             plugin = plugins.load(i)
-            logger.debug("Writing temperatures to %s", plugin.plugin_name)
             try:
                 plugin.write(timestamp, temperatures)
             except Exception as e:
@@ -191,7 +190,7 @@ def main(argv):
     Main appliction entry point
     """
 
-    polling_interval = config.getint('EvoHome', 'pollingInterval')
+    polling_interval = config.getint('DEFAULT', 'pollingInterval')
     debug_logging = False
 
     try:
@@ -218,13 +217,13 @@ def main(argv):
         elif opt in ('-d', '--debug'):
             debug_logging = True
 
-    configure_logging(logging.DEBUG if debug_logging or is_debugging_enabled('DEFAULT') else logging.INFO)
+    configure_logging(logging.DEBUG if debug_logging or config.is_debugging_enabled('DEFAULT') else logging.INFO)
 
     logger.info("==Started==")
 
     global plugins
     sections = filter(lambda a: a.lower() != 'DEFAULT', config.sections())
-    plugins = PluginLoader(sections, './plugins')
+    plugins = PluginLoader(config, sections, './plugins')
 
     if polling_interval == 0:
         logger.info('One-off run, existing after a single publish')

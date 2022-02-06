@@ -9,7 +9,7 @@ Writes the temperatures to the console in the form:
 2016-06-05 15:27:31 Kitchen (21.0 A, 12.0 T) Hot Water (45.0, OFF) Outside (21.3)
 ```
 
-This tells me that at 15:17:31 UTC (16:17:31 local time in the UK) on 5th June 2016, the Kitchen was 21.2 degrees, target 12.0 (heating off presumably), 
+This tells me that at 15:17:31 UTC (16:17:31 local time in the UK) on 5th June 2016, the Kitchen was 21.2 degrees, target 12.0 (heating off presumably),
 the hot water is 45 degrees, target 55 (HW will be on trying to reach this temp) and outside it is 21.3 degrees
 
 Then 10 minutes later the Kitchen temp has dropped by 0.2 degrees and hot water is now OFF
@@ -21,5 +21,7 @@ disabled=<true to disable it, false to enable>
 ```
 
 ## Changelog
+### 2.0.0 (2022-02-06)
+- Rewritten to use the new plugin model
 ### 1.0.0 (2021-12-28)
 Initial release

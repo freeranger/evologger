@@ -26,9 +26,9 @@ Once you have configured the plugin and run evologger to log at least one set of
     * Set the interval to be the same as the polling interval in `config.ini`, remembering that it is in seconds in - eg. `config.ini` would be 5 minutes here
 4. Go to the [Feeds](https://emoncms.org/feed) page (follow the link or find it on the "setup" menu):
    ![feeds](https://cloud.githubusercontent.com/assets/1401069/16238550/c2c71c3e-37d8-11e6-8b82-3e35e9cbc68d.png)
-5. All you current actual and target temperature feeds will be in one table. You can edit each line and add a Tag and rename the display name by using the pencil icon. You might, for example, tag all the radiator zones as "Heating".  
+5. All you current actual and target temperature feeds will be in one table. You can edit each line and add a Tag and rename the display name by using the pencil icon. You might, for example, tag all the radiator zones as "Heating".
    This step is optional.
-6. At this point emoncms is now logging all your data and you can start to create graphs.  
+6. At this point emoncms is now logging all your data and you can start to create graphs.
    The easiest way to see a graph is to click on one of the eye icons next to a value you want to see on the  [Feeds](https://emoncms.org/feed) page:
    ![graph](https://cloud.githubusercontent.com/assets/1401069/16238552/c4d7b29a-37d8-11e6-866c-06c2d73a1d04.png)
    You can add or remove other feeds to e.g. compare target vs actual temp, compare different rooms etc.
@@ -41,6 +41,8 @@ _<sub>* Thanks to bmccluskey from the automatedhome.co.uk for these excellent in
 
 
 ## Changelog
+### 3.0.0 (2022-02-06)
+- Rewritten to use the new plugin model
 ### 2.0.0 (2021-12-28)
 - Upgraded to Python 3.9
 - Additional logging and bug fixes

@@ -12,37 +12,10 @@ import random
 import requests
 from tempfile import gettempdir
 from evohomeclient2 import EvohomeClient
-from config_helper import *
+
+from AppConfig import AppConfig
+from plugins.PluginBase import InputPluginBase, _get_plugin_logger
 from Temperature import *
-
-plugin_name = "EvoHome"
-plugin_type = "input"
-
-__logger = get_plugin_logger(plugin_name)
-__token_file = f'{gettempdir()}/{plugin_name}.access_tokens.json'
-__invalid_config = False
-
-try:
-    __config = get_config()
-    __simulation = get_boolean_or_default(plugin_name, 'Simulation', False)
-
-    __http_debug = get_boolean_or_default('DEFAULT', 'httpDebug', False)
-
-    __section = __config[plugin_name]
-    __username = __section['username']
-    __password = __section['password']
-    __location = get_string_or_default(plugin_name, 'Location', None)
-    if __location is None:
-        __logger.debug('No location specified, will use the first by default')
-    else:
-        __logger.debug(f'Using location: {__location}')
-
-    __hotwater = __section['HotWater']
-    __hotwater_setpoint = get_float_or_default(plugin_name, 'HotWaterSetPoint', None)
-
-except Exception as config_ex:
-    __logger.error(f'Error reading config:\n{config_ex}')
-    __invalid_config = True
 
 
 class EvohomeMultiLocationClient(EvohomeClient):
@@ -50,9 +23,9 @@ class EvohomeMultiLocationClient(EvohomeClient):
     Add to the base class the ability to get a specified location/heating system - for installations with multiple locations
     """
 
-    def __init__(self, username:str, password:str, debug:bool=False, refresh_token=None, access_token=None, access_token_expires=None):
+    def __init__(self, config: AppConfig, plugin_name, username:str, password:str, debug:bool=False, refresh_token=None, access_token=None, access_token_expires=None):
         super(EvohomeMultiLocationClient, self).__init__(username, password, debug, refresh_token, access_token, access_token_expires)
-        self.__logger = get_plugin_logger(f'{plugin_name}:{self.__class__.__name__}')
+        self._logger = _get_plugin_logger(config, f'{plugin_name}:{self.__class__.__name__}')
 
 
     def get_location(self, locationId=None):
@@ -72,7 +45,7 @@ class EvohomeMultiLocationClient(EvohomeClient):
         if actual_location is None:
             raise ValueError(f'No location found with the id or name "{locationId}"') from None
 
-        self.__logger.debug(f'Location {actual_location} found')
+        self._logger.debug(f'Location {actual_location} found')
         return actual_location
 
 
@@ -101,10 +74,10 @@ class EvohomeMultiLocationClient(EvohomeClient):
 
         matching_locations_count = len(matching_locations)
         if matching_locations_count == 0:
-            self.__logger.debug(f'Did not find locationId: {locationId}')
+            self._logger.debug(f'Did not find locationId: {locationId}')
             return None
         if matching_locations_count == 1:
-            self.__logger.debug(f'Found locationId: {locationId}')
+            self._logger.debug(f'Found locationId: {locationId}')
             return matching_locations[0]
         raise ValueError(f'Found {matching_locations_count} locations matching "{locationId}"') from None
 
@@ -114,136 +87,147 @@ class EvohomeMultiLocationClient(EvohomeClient):
 
         matching_locations_count = len(matching_locations)
         if matching_locations_count == 0:
-            self.__logger.debug(f'Did not find location named: {name}')
+            self._logger.debug(f'Did not find location named: {name}')
             return None
         if matching_locations_count == 1:
-            self.__logger.debug(f'Found location named: {name}')
+            self._logger.debug(f'Found location named: {name}')
         else:
-            self.__logger.debug(f'Found {matching_locations_count} locations matching "{name}", returning the first one')
+            self._logger.debug(f'Found {matching_locations_count} locations matching "{name}", returning the first one')
         return matching_locations[0]
 
 
-def __get_raw_data(client):
-    """
-    Get the same temp data that EvoClient pulls back for debugging/error diagnostics
-    """
-    location =  client.get_location(__location)
-    r = requests.get('https://tccna.honeywell.com/WebAPI/emea/api/v1/location/%s/status?includeTemperatureControlSystems=True' % location.locationId, headers=client._headers())
-    return r.text
+class Plugin(InputPluginBase):
+
+    def _read_configuration(self, config: AppConfig):
+        self._config = config
+        section = config[self.plugin_name]
+        self._token_file = f'{gettempdir()}/{self.plugin_name}.access_tokens.json'
+        self._http_debug = config.get_boolean_or_default('DEFAULT', 'httpDebug', False)
+        self._username = section['username']
+        self._password = section['password']
+        self._location = config.get_string_or_default(self.plugin_name, 'Location', None)
+        if self._location is None:
+            self._logger.debug('No location specified, will use the first by default')
+        else:
+            self._logger.debug(f'Using location: {self._location}')
+
+        self._hotwater = section['HotWater']
+        self._hotwater_setpoint = config.get_float_or_default(self.plugin_name, 'HotWaterSetPoint', None)
 
 
-def __is_hotwater_on(client) -> bool:
-    """
-    Determines if the hot water is on or not
-    """
-    location = client.get_location(__location)
-    status = location.status()
-    if 'dhw' in status['gateways'][0]['temperatureControlSystems'][0]:
-        __logger.debug('DHW found')
-        dhw = status['gateways'][0]['temperatureControlSystems'][0]['dhw']
-        return dhw['stateStatus']['state'] == 'On'
-    __logger.debug('No DHW found')
-    return False
+    def __init__(self, config: AppConfig) -> None:
+        super().__init__(config, 'EvoHome', 'input')
+
+    def _get_evoclient(self):
+        """
+        Returns an instance of an Evohome client which caches credentials
+        """
+
+        # The Evohome client library turns off global debugging so save the value incase we need to re-enable!
+        global_debug = logging.getLogger().isEnabledFor(logging.DEBUG)
+        try:
+            self._logger.debug(f'Reading token cache from {self._token_file}')
+            # Actually getting a token is rate-limited, though using it is not.
+            # So we get and store tokens we can reuse them
+            # https://github.com/watchforstock/evohome-client/issues/57
+            with io.open(self._token_file, "r", encoding='UTF-8') as f:
+                token_data = json.load(f)
+                access_token = token_data[0]
+                refresh_token = token_data[1]
+                access_token_expires = datetime.strptime(token_data[2], "%Y-%m-%d %H:%M:%S.%f")
+            self._logger.debug(f'Using cached credentials expiring at {access_token_expires}')
+        except (IOError, ValueError):
+            access_token = None
+            refresh_token = None
+            access_token_expires = None
+            self._logger.debug('No cached credentials available')
+
+        client = EvohomeMultiLocationClient(self._config, self.plugin_name, self._username, self._password, debug=self._config.is_debugging_enabled(self.plugin_name) , refresh_token=refresh_token, access_token=access_token, access_token_expires=access_token_expires)
+        if global_debug:
+            logging.getLogger().setLevel(logging.DEBUG)
+
+        # EvohomeClient turns on http debug logging if debug is set - we only want it if we have http debug enabled
+        if self._config.is_debugging_enabled(self.plugin_name) == True and self._http_debug == False:
+            http.client.HTTPConnection.debuglevel = 0
+
+        # save session-id's so we don't need to re-authenticate every polling cycle.
+        with io.open(self._token_file, "w", encoding='UTF-8') as f:
+            token_data = [ client.access_token, client.refresh_token, str(client.access_token_expires) ]
+            json.dump(token_data, f)
+
+        return client
+
+    def _get_raw_data(self, client):
+        """
+        Get the same temp data that EvoClient pulls back for debugging/error diagnostics
+        """
+        location =  client.get_location(self._location)
+        r = requests.get('https://tccna.honeywell.com/WebAPI/emea/api/v1/location/%s/status?includeTemperatureControlSystems=True' % location.locationId, headers=client._headers())
+        return r.text
 
 
-def __get_evoclient():
-    """
-    Returns an instance of an Evohome client which caches credentials
-    """
+    def _is_hotwater_on(self, client) -> bool:
+        """
+        Determines if the hot water is on or not
+        """
+        location = client.get_location(self._location)
+        status = location.status()
+        if 'dhw' in status['gateways'][0]['temperatureControlSystems'][0]:
+            self._logger.debug('DHW found')
+            dhw = status['gateways'][0]['temperatureControlSystems'][0]['dhw']
+            return dhw['stateStatus']['state'] == 'On'
+        self._logger.debug('No DHW found')
+        return False
 
-    # The Evohome client library turns off global debugging so save the value incase we need to re-enable!
-    global_debug = logging.getLogger().isEnabledFor(logging.DEBUG)
-    try:
-        # Actually getting a token is rate-limited, though using it is not.
-        # So we get and store tokens we can reuse them
-        # https://github.com/watchforstock/evohome-client/issues/57
-        with io.open(__token_file, "r", encoding='UTF-8') as f:
-            token_data = json.load(f)
-            access_token = token_data[0]
-            refresh_token = token_data[1]
-            access_token_expires = datetime.strptime(token_data[2], "%Y-%m-%d %H:%M:%S.%f")
-        __logger.debug(f'Using cached credentials expiring at {access_token_expires}')
-    except (IOError, ValueError):
-        access_token = None
-        refresh_token = None
-        access_token_expires = None
-        __logger.debug('No cached credentials available')
+    # pylint disable=E1101
+    def _read_temperatures(self):
+        """
+        Reads the temperatures from an EvoHome instance
+        """
 
-    client = EvohomeMultiLocationClient(__username, __password, debug=is_debugging_enabled(plugin_name) , refresh_token=refresh_token, access_token=access_token, access_token_expires=access_token_expires)
-    if global_debug:
-        logging.getLogger().setLevel(logging.DEBUG)
-
-    # EvohomeClient turns on http debug logging if debug is set - we only want it if we have http debug enabled
-    if is_debugging_enabled(plugin_name) == True and __http_debug == False:
-        http.client.HTTPConnection.debuglevel = 0
-
-    # save session-id's so we don't need to re-authenticate every polling cycle.
-    with io.open(__token_file, "w", encoding='UTF-8') as f:
-        token_data = [ client.access_token, client.refresh_token, str(client.access_token_expires) ]
-        json.dump(token_data, f)
-
-    return client
-
-
-def read():
-    """
-    Reads the temperatures from an EvoHome instance
-    """
-
-    if __invalid_config:
-        __logger.warning('Invalid config, aborting read')
-        return []
-
-    debug_message = f'Reading from {plugin_name}'
-    if __simulation:
-        debug_message += ' [SIMULATED]'
-        __logger.debug(debug_message)
-
-    client = None
-
-    temperatures = []
-
-    try:
-        if not __simulation:
-            client = __get_evoclient()
-    except Exception as e:
-        __logger.exception(f'EvoHome API error - aborting read\n{e}')
-        return []
-
-    text_temperatures = f'{datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")} '
-
-    if not __simulation:
+        client = None
+        temperatures = []
 
         try:
-            heating_system = client.get_heating_system(__location)
-            zones = heating_system.temperatures()
+            if not self._simulation:
+                client = self._get_evoclient()
         except Exception as e:
-            __logger.exception(f'EvoHome API error getting temperatures - aborting\n{e}')
-            return []
+            self._logger.exception(f'EvoHome API error - aborting read\n{e}')
+            return ([], '')
 
-        while True:
+        text_temperatures = ''
+
+        if not self._simulation:
+
             try:
-                zone = next(zones)
-                if isinstance(zone, KeyError):
-                    if heating_system.hotwater is not None:
-                        __logger.exception(f'EvoHome API key error getting temperatures - could be hot water- status: {heating_system.hotwater.temperatureStatus} - skipping\n{zone}\nraw_data={__get_raw_data(client)}')
+                heating_system = client.get_heating_system(self._location)
+                zones = heating_system.temperatures()
+            except Exception as e:
+                self._logger.exception(f'EvoHome API error getting temperatures - aborting\n{e}')
+                return ([], '')
+
+            while True:
+                try:
+                    zone = next(zones)
+                    if isinstance(zone, KeyError):
+                        if heating_system.hotwater is not None:
+                            self._logger.exception(f'EvoHome API key error getting temperatures - could be hot water- status: {heating_system.hotwater.temperatureStatus} - skipping\n{zone}\nraw_data={self._get_raw_data(client, self._location)}')
+                        else:
+                            self._logger.exception(f'EvoHome API key error getting temperatures - skipping\n{zone}\nraw_data={self._get_raw_data(client)}')
                     else:
-                        __logger.exception(f'EvoHome API key error getting temperatures - skipping\n{zone}\nraw_data={__get_raw_data(client)}')
+                        if isinstance(zone, Exception):
+                            self._logger.exception(f'EvoHome API error getting temperatures - skipping\n{zone}\nraw_data={self._get_raw_data(client)}')
+                except StopIteration:
+                    break
+                except Exception as ex:
+                    self._logger.exception(f'EvoHome API error getting temperatures - skipping\n{ex}\nraw_data={self._get_raw_data(client)}')
                 else:
-                    if isinstance(zone, Exception):
-                        __logger.exception(f'EvoHome API error getting temperatures - skipping\n{zone}\nraw_data={__get_raw_data(client)}')
-            except StopIteration:
-                break
-            except Exception as ex:
-                __logger.exception(f'EvoHome API error getting temperatures - skipping\n{ex}\nraw_data={__get_raw_data(client)}')
-            else:
-                for zone in zones:
                     # normalise response for DHW to be consistent with normal zones
                     if zone['thermostat'] == 'DOMESTIC_HOT_WATER':
-                        zone['name'] = __hotwater
-                        if __is_hotwater_on(client):
-                            if __hotwater_setpoint is not None:
-                                zone['setpoint'] = __hotwater_setpoint
+                        zone['name'] = self._hotwater
+                        if self._is_hotwater_on(client):
+                            if self._hotwater_setpoint is not None:
+                                zone['setpoint'] = self._hotwater_setpoint
                         else:
                             zone['setpoint'] = 0.0
 
@@ -256,11 +240,11 @@ def read():
                         try:
                             temp = float(raw_temp)
                             if temp == 128.0:
-                                __logger.warning(f'No temperature returned for Zone: {zone["name"]} - returning default ({DEFAULT_TEMP}')  # pylint disable=W0640
+                                self._logger.warning(f'No temperature returned for Zone: {zone["name"]} - returning default ({DEFAULT_TEMP}')  # pylint disable=W0640
                                 return DEFAULT_TEMP
                             return temp
                         except Exception:
-                            __logger.exception(f'Error converting "{raw_temp}" to a float, returning default ({DEFAULT_TEMP}')
+                            self._logger.exception(f'Error converting "{raw_temp}" to a float, returning default ({DEFAULT_TEMP}')
                             return DEFAULT_TEMP
 
                     if zone['setpoint'] != '' and zone['setpoint'] is not None:
@@ -270,18 +254,13 @@ def read():
                         temp = Temperature(zone['name'], temp_or_default(zone['temp']))
                     text_temperatures += ') '
                     temperatures.append(temp)
-                    __logger.debug(text_temperatures)
-    else:
-        # Return some random temps if simulating a read
-        temperatures = [Temperature("Lounge", round(random.uniform(12.0, 28.0), 1), 22.0),
-                        Temperature("Master Bedroom", round(random.uniform(18.0, 25.0), 1), 12.0),
-                        Temperature(__hotwater, round(random.uniform(40, 65), 1))]
-        text_temperatures = f'[SIMULATED] {temperatures[0].zone} ({temperatures[0].actual} A) ({temperatures[0].target} T) {temperatures[1].zone} ({temperatures[1].actual} A) ({temperatures[1].target} T) {temperatures[2].zone} ({temperatures[2].actual} A)'
-        __logger.info(text_temperatures)
+                    self._logger.debug(text_temperatures)
+        else:
+            # Return some random temps if simulating a read
+            temperatures = [Temperature("Lounge", round(random.uniform(12.0, 28.0), 1), 22.0),
+                            Temperature("Master Bedroom", round(random.uniform(18.0, 25.0), 1), 12.0),
+                            Temperature(self._hotwater, round(random.uniform(40, 65), 1))]
+            text_temperatures = f'[SIMULATED] {temperatures[0].zone} ({temperatures[0].actual} A) ({temperatures[0].target} T) {temperatures[1].zone} ({temperatures[1].actual} A) ({temperatures[1].target} T) {temperatures[2].zone} ({temperatures[2].actual} A)'
+            self._logger.info(text_temperatures)
 
-    return temperatures
-
-
-# if called directly then this is what will execute
-if __name__ == "__main__":
-    read()
+        return (temperatures, text_temperatures)
