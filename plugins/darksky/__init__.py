@@ -2,71 +2,48 @@
 DarkSky input plugin - for getting the outside temperature
 """
 
-from datetime import datetime
 import random
 import urllib.parse
 import forecastio
-from config_helper import *
+
+from AppConfig import AppConfig
+from plugins.PluginBase import InputPluginBase
 from Temperature import *
 
-plugin_name = "DarkSky"
-plugin_type = "input"
+class Plugin(InputPluginBase):
+    """DarkSky input Plugin immplementation"""
 
-__logger = get_plugin_logger(plugin_name)
-__invalid_config = False
+    def _read_configuration(self, config: AppConfig):
+        section = config[self.plugin_name]
+        self._api_key = section['apiKey']
+        self._latitude = section['latitude']
+        self._longitude = section['longitude']
+        self._zone = config.get_string_or_default(self.plugin_name, 'Outside', 'Outside')
+        self._logger.debug("Outside Zone: %s", self._zone)
 
-try:
-    __config = get_config()
+    def __init__(self, config: AppConfig) -> None:
+        super().__init__(config, 'DarkSky', 'input')
 
-    __simulation = get_boolean_or_default(plugin_name, 'Simulation', False)
+    # pylint disable=E1101
+    def _read_temperatures(self):
+        """
+        Reads the outside temperature from DarkSky
+        """
 
-    __section = __config[plugin_name]
-    __api_key = __section['apiKey']
-    __latitude = __section['latitude']
-    __longitude = __section['longitude']
-    __zone = get_string_or_default(plugin_name, 'Outside', 'Outside')
-    __logger.debug("Outside Zone: %s", __zone)
+        if not self._simulation:
+            try:
+                forecast = forecastio.load_forecast(self._api_key, self._latitude, self._longitude)
+            except Exception as e:
+                if hasattr(e, 'request'):
+                    self._logger.exception(f'DarkSky API Error reading from {e.request.method} {urllib.parse.unquote(e.request.url)}\nResponse: {e.response.json()}\nError:{e}')
+                else:
+                    self._logger.exception(f'DarkSky API error - aborting read:\n{e}')
+                return []
 
-except Exception as config_ex:
-    __logger.exception(f'Error reading config:\n{config_ex}')
-    __invalid_config = True
+            temp = round(forecast.currently().temperature, 1) # pylint: disable=no-member
+        else:
+            temp = round(random.uniform(12.0, 23.0), 1)
 
-# pylint disable=E1101
-def read():
-    """
-    Reads the outside temperature from DarkSky
-    """
+        text_temperatures = f'{self._zone} ({temp})'
 
-    if __invalid_config:
-        __logger.debug('Invalid config, aborting read')
-        return []
-
-    debug_message = f'Reading Temp for (lat: {__latitude}, long: {__longitude}) from {plugin_name}'
-    if __simulation:
-        debug_message += ' [SIMULATED]'
-        __logger.debug(debug_message)
-
-    if not __simulation:
-        try:
-            forecast = forecastio.load_forecast(__api_key, __latitude, __longitude)
-        except Exception as e:
-            if hasattr(e, 'request'):
-                __logger.exception(f'DarkSky API Error reading from {e.request.method} {urllib.parse.unquote(e.request.url)}\nResponse: {e.response.json()}\nError:{e}')
-            else:
-                __logger.exception(f'DarkSky API error - aborting read:\n{e}')
-            return []
-
-        temp = round(forecast.currently().temperature, 1)
-    else:
-        temp = round(random.uniform(12.0, 23.0), 1)
-
-    if __simulation:
-        __logger.info(f'[SIMULATED] {datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")}: {__zone} ({temp})')
-    else:
-        __logger.debug(f'{datetime.utcnow().strftime("%Y-%m-%d %H:%M:%S")}: {__zone} ({temp})')
-
-    return [Temperature(__zone, temp)]
-
-# if called directly then this is what will execute
-if __name__ == "__main__":
-    read()
+        return ([Temperature(self._zone, temp)], text_temperatures)

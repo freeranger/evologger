@@ -23,6 +23,8 @@ Outside=<name you want to call this "zone" - default "Outside"> - recommend this
 - Authentication Tokens are cached in a file in a temp directory to avoid hitting rate limits when accessing the API.
 
 ## Changelog
+### 2.0.0 (2022-02-06)
+- Rewritten to use the new plugin model
 ### 1.0.0 (2022-01-02)
 Initial release
 

@@ -14,8 +14,8 @@
                 "isAvailable": true
               },
               "activeFaults": [],
-              "heatSetpointStatus": {
-                "targetTemperature": 5,
+              "setpointStatus": {
+                "targetHeatTemperature": 5,
                 "setpointMode": "PermanentOverride"
               },
               "name": "Office 2"
@@ -27,8 +27,8 @@
                 "isAvailable": true
               },
               "activeFaults": [],
-              "heatSetpointStatus": {
-                "targetTemperature": 12,
+              "setpointStatus": {
+                "targetHeatTemperature": 12,
                 "setpointMode": "FollowSchedule"
               },
               "name": "Master Bed 2"
@@ -40,8 +40,8 @@
                 "isAvailable": true
               },
               "activeFaults": [],
-              "heatSetpointStatus": {
-                "targetTemperature": 17,
+              "setpointStatus": {
+                "targetHeatTemperature": 17,
                 "setpointMode": "FollowSchedule"
               },
               "name": "Kitchen 2"
@@ -53,8 +53,8 @@
                 "isAvailable": true
               },
               "activeFaults": [],
-              "heatSetpointStatus": {
-                "targetTemperature": 16,
+              "setpointStatus": {
+                "targetHeatTemperature": 16,
                 "setpointMode": "FollowSchedule"
               },
               "name": "Living Room 2"

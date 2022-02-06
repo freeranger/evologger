@@ -10,7 +10,7 @@ Reads the temperatures from your [EvoHome](http://www.honeywelluk.com/products/S
   `pip install evohomeclient`
 
   or, to upgrade your existing one:
-  
+
   `pip install evohomeclient --upgrade`
 
 ## config.ini settings
@@ -18,7 +18,7 @@ Reads the temperatures from your [EvoHome](http://www.honeywelluk.com/products/S
 [EvoHome]
 username=<evohome username>
 password=<evohome password>
-location=<location id or location name> 
+location=<location id or location name>
 
 Note: location is optional - only specify it if you have more than one location, or want to use anything other than the first location
 You can specify the name of the location or the id.  The name is exactly as registered on the EvoHome/Totalconnect website.
@@ -29,7 +29,7 @@ HotWater=<name you want for the hot water "zone"> - recommend this is actually p
 HotWaterSetPoint=<Target temperature for Hot Water when it is on>
 Note: These two are only required if you have hot water control
 ```
- 
+
 ## Notes
 - Authentication Tokens are cached in a file in a temp directory to avoid hitting rate limits on obtaining a token from the API.
 The ability to use access/refresh tokens is provided by the EvoHome Client library but caching of same is implemented here.
@@ -42,6 +42,8 @@ The ability to use access/refresh tokens is provided by the EvoHome Client libra
 
 
 ## Changelog
+### 3.0.0 (2022-02-06)
+- Rewritten to use the new plugin model
 ### 2.0.1 (2022-01-02)
 - Moved tokens file to temp folder
 - Use Hot Water zone name in simulation as well as when reading for real
@@ -49,7 +51,6 @@ The ability to use access/refresh tokens is provided by the EvoHome Client libra
 - Upgraded to Python 3.9
 - Add support for cached access tokens
 - Additional logging and bug fixes
-
 ### 1.0.0 (2017)
 Initial release
 

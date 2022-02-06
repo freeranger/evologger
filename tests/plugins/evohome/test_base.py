@@ -1,35 +1,41 @@
+import os
 import json
 import httpretty
-from mock import patch
+from AppConfig import AppConfig
+import plugins.evohome as evohome
 
-import context  # need this line in so evohome etc can be found
+def mock_data_file(filename: str) -> str:
+    return os.path.join(os.path.dirname(__file__), f'mock_data/{filename}')
+
 
 class TestBase(object):
 
-    @property
-    def installation_file_name(self):
-        return None
+    ini_file_name: str = None
+    installation_file_name: str = None
 
-    def setUp(self):
-        with open('mock_data/account_info.json') as data_file:
+    def setup_class(self):
+        with open(mock_data_file('account_info.json'), encoding='utf-8') as data_file:
             raw_account_info = data_file.read()
         self.account_info = json.loads(raw_account_info)
 
-        with open('mock_data/' + self.installation_file_name) as data_file:
+        with open(mock_data_file(self.installation_file_name), encoding='utf-8') as data_file:
             raw_installation_data = data_file.read()
         self.installation_info = json.loads(raw_installation_data)
 
-        with open('mock_data/location_1_status.json') as data_file:
+        with open(mock_data_file('location_1_status.json'), encoding='utf-8') as data_file:
             raw_location_1_status = data_file.read()
         self.location_1_status = json.loads(raw_location_1_status)
 
-        with open('mock_data/location_2_status.json') as data_file:
+        with open(mock_data_file('location_2_status.json'), encoding='utf-8') as data_file:
             raw_location_2_status = data_file.read()
         self.location_2_status = json.loads(raw_location_2_status)
 
+        with open(mock_data_file('token.json'), encoding='utf-8') as data_file:
+            self.token= data_file.read()
+
         httpretty.enable()
         httpretty.register_uri(httpretty.POST, "https://tccna.honeywell.com/Auth/OAuth/Token",
-                               body='{"access_token": "TEST_TOKEN"}',
+                               body=self.token,
                                content_type="application/json")
         httpretty.register_uri(httpretty.GET, "https://tccna.honeywell.com/WebAPI/emea/api/v1/userAccount",
                                body=raw_account_info,
@@ -50,16 +56,3 @@ class TestBase(object):
     def tearDown(self):
         httpretty.disable()  # disable afterwards, so that you will have no problems in code that uses that socket module
         httpretty.reset()
-
-
-    def read_temperatures(self):
-        with patch('ConfigParser.open', create=True) as open_:
-            with open('mock_data/' + self.ini_file_name) as file_:
-                def reset():
-                    file_.seek(0)
-
-                open_.return_value.readline = file_.readline
-                open_.return_value.close = reset
-
-                import evohome
-                return evohome.read()

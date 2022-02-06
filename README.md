@@ -1,4 +1,4 @@
-# Evo Logger
+# Evo Logger [![Build Status](https://semaphoreci.com/api/v1/freeranger/evologger/branches/master/shields_badge.svg)](https://semaphoreci.com/freeranger/evologger)
 
 ## Purpose
 
@@ -63,10 +63,9 @@ Any plugins you don't want to use, it's probably best to remove their section(s)
 ##### Outputs
 * [Console](https://github.com/freeranger/evologger/blob/master/plugins/console/readme.md) - writes to the console
 * [Csv](https://github.com/freeranger/evologger/blob/master/plugins/csv/readme.md) - write to a csv file so you can generate your own graphs or whatever in Excel
+* [Emoncms](https://github.com/freeranger/evologger/blob/master/plugins/emoncms/readme.md) - write directly to [emoncms](https://emoncms.org) inputs
 * [InfluxDb 1.x](https://github.com/freeranger/evologger/blob/master/plugins/influxdb/readme.md) - write to an InfluxDB 1.x timeseries database so you can then graph in [grafana](https://grafana.net) for example.
 * [InfluxDb 2.x](https://github.com/freeranger/evologger/blob/master/plugins/influxdb2/readme.md) - write to an InfluxDB 2.x timeseries database so you can then graph in [grafana](https://grafana.net) for example.
-* [Plot.ly](https://github.com/freeranger/evologger/blob/master/plugins/plotly/readme.md) - write directly to [Plot.ly](http://plot.ly.com) streams for live updating graphs
-* [Emoncms](https://github.com/freeranger/evologger/blob/master/plugins/emoncms/readme.md) - write directly to [emoncms](https://emoncms.org) inputs
 
 See the readme file in each plugin's folder for instructions on any specific configuration or initialisation steps required.
 
@@ -93,15 +92,19 @@ There are a few rules you must follow for your plugin:
 
 * Plugins must be stored beneath the "plugins" folder and have a `__init__.py` file.
 * The name of the plugin folder should match the name of the section in the `config.ini`
-* The plugin must contain two properties - `plugin_name` - the name of the plugin and `plugin_type` - `"input" or "output"`
+* The plugin must be a class named `Plugin` and inherit from `InputPluginBase` or `OutputPluginBase` as appropriate
+* The plugin has a `_read_configuration` method which reads any plugin-specific config from the supplied config instance
 * The plugin should support the `disabled|simulation|debug` options in `config.ini` as described previously
-* An input plugin must have a method `read` which takes no parameters and returns an array of Temperature objects with these properties:
-    * zone - the name of the "zone" the temperature is for
-    * actual - the actual temperature
-    * target - the target temperature - this is optional - do not supply if target has no meaning for this plugin (e.g. when reading outside temperature)
-* An output plugin must have a method `write` which takes two parameters:
+* An input plugin must implement the `_read_temperatures` method which returns a tuple which is:
+    * An array of Temperature objects with these properties:
+       * zone - the name of the "zone" the temperature is for
+       * actual - the actual temperature
+       * target - the target temperature - this is optional - do not supply if target has no meaning for this plugin (e.g. when reading outside temperature)
+    * A text string representation of the temperatures read
+* An output plugin must implement the `_write_temperatures` method which takes these parameters:
     * timestamp - the time in UTC when the temperature readings were taken
     * temperatures - an array of Temperature object, with the same format as emitted by the input plugins
+    And returns a text string representation of the temperature data written
 
 
 ## Limitations
@@ -111,6 +114,9 @@ There are a few rules you must follow for your plugin:
 
 
 ## Changelog
+### 3.0.0 (2022-02-06)
+- Rewritten to use the new plugin model
+- Removed deprecated plotly plugin
 ### 2.1.0 (2021-01-82)
 - Netatmo plugin added (v 1.0.0)
 - Fix changelog dates

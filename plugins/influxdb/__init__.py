@@ -5,32 +5,12 @@ InfluxDB v1.x input plugin
 
 import sys
 import urllib.parse
-from influxdb import InfluxDBClient, exceptions
-from config_helper import *
+from influxdb import InfluxDBClient
 
-plugin_name = "InfluxDB"
-plugin_type="output"
+from AppConfig import AppConfig
+from plugins.PluginBase import OutputPluginBase
 
-__logger = get_plugin_logger(plugin_name)
-__invalid_config = False
-
-try:
-    __simulation = get_boolean_or_default(plugin_name, 'Simulation', False)
-    __section = get_config()[plugin_name]
-    __hostname = __section["hostname"]
-    __port = __section["port"]
-    __database = __section["database"]
-    __username = __section["username"]
-    __password = __section["password"]
-
-    __logger.debug(f'Influx Host: {__hostname}:{__port} Database: {__database}')
-
-except Exception as config_ex:
-    __logger.exception("Error reading config:\n%s", config_ex)
-    __invalid_config = True
-
-
-def get_zone_measurements(time, zone, actual, target):
+def _get_zone_measurements(time, zone, actual, target, logger):
     """
     Returns the actual, target, and delta data points for a zone
     """
@@ -52,7 +32,7 @@ def get_zone_measurements(time, zone, actual, target):
                     }
                 }
         except Exception as e:
-            __logger.exception(f'Error creating data point for {name}, zone: {zone}, value: {value}:\n{e}')
+            logger.exception(f'Error creating data point for {name}, zone: {zone}, value: {value}:\n{e}')
             return {}
 
     if actual is not None and actual != '':
@@ -67,53 +47,54 @@ def get_zone_measurements(time, zone, actual, target):
     return record_actual, record_target, record_delta
 
 
-def write(timestamp, temperatures):
-    """
-    Writes the temperatures to the database
-    """
+class Plugin(OutputPluginBase):
+    """InfluxDB v1.x output Plugin immplementation"""
 
-    if __invalid_config:
-        __logger.warning('Invalid config, aborting write')
+    def _read_configuration(self, config: AppConfig):
+        section = config[self.plugin_name]
+        self._hostname = section["hostname"]
+        self._port = section["port"]
+        self._database = section["database"]
+        self._username = section["username"]
+        self._password = section["password"]
+        self._logger.debug(f'Influx Host: {self._hostname}:{self._port} Database: {self._database}')
 
-    debug_message = f'Writing to {plugin_name}'
-    if __simulation:
-        debug_message += ' [SIMULATED]'
-    __logger.debug(debug_message)
+    def __init__(self, config: AppConfig) -> None:
+        super().__init__(config, 'InfluxDB', 'output')
 
-    influx_client = InfluxDBClient(__hostname, __port, __username, __password, __database)
+    def _write_temperatures(self, timestamp, temperatures):
+        """
+        Writes the temperatures to the database
+        """
 
-    debug_row_text = f'{timestamp}: '
-    data = []
-    for temperature in temperatures:
+        influx_client = InfluxDBClient(self._hostname, self._port, self._username, self._password, self._database)
 
-        record_actual, record_target, record_delta = get_zone_measurements(timestamp, temperature.zone, temperature.actual, temperature.target)
+        text_temperatures = ''
+        data = []
+        for temperature in temperatures:
 
-        if record_actual:
-            data.append(record_actual)
-        if record_target:
-            data.append(record_target)
-        if record_delta:
-            data.append(record_delta)
+            record_actual, record_target, record_delta = _get_zone_measurements(timestamp, temperature.zone, temperature.actual, temperature.target, self._logger)
 
-        debug_row_text += f'{temperature.zone} ({temperature.actual} A'
-        if temperature.target is not None:
-            debug_row_text += f', {temperature.target} T'
-        debug_row_text += ') '
+            if record_actual:
+                data.append(record_actual)
+            if record_target:
+                data.append(record_target)
+            if record_delta:
+                data.append(record_delta)
 
-    try:
-        if __simulation:
-            __logger.info("[SIMULATED] %s", debug_row_text)
-        else:
-            __logger.debug(debug_row_text)
-            __logger.debug('Writing all zone measurements to influx...')
-            influx_client.write_points(data)
-    except Exception as e:
-        if hasattr(e, 'request'):
-            __logger.exception(f'Error Writing to {__database} at {__hostname}:{__port} - aborting write.\nRequest: {e.request.method} {urllib.parse.unquote(e.request.url)}\nBody: {e.request.body}.\nResponse: {e.response}\nError:{e}')
-        else:
-            __logger.exception(f'Error Writing to {__database} at {__hostname}:{__port} - aborting write\nError:{e}')
+            text_temperatures += f'{temperature.zone} ({temperature.actual} A'
+            if temperature.target is not None:
+                text_temperatures += f', {temperature.target} T'
+            text_temperatures += ') '
 
-
-# if called directly then this is what will execute
-if __name__ == "__main__":
-    write(sys.argv[1], sys.argv[2])
+        try:
+            if self._simulation is False:
+                self._logger.debug(text_temperatures)
+                self._logger.debug('Writing all zone measurements to influx...')
+                influx_client.write_points(data)
+        except Exception as e:
+            if hasattr(e, 'request'):
+                self._logger.exception(f'Error Writing to {self._database} at {self._hostname}:{self._port} - aborting write.\nRequest: {e.request.method} {urllib.parse.unquote(e.request.url)}\nBody: {e.request.body}.\nResponse: {e.response}\nError:{e}')
+            else:
+                self._logger.exception(f'Error Writing to {self._database} at {self._hostname}:{self._port} - aborting write\nError:{e}')
+        return text_temperatures

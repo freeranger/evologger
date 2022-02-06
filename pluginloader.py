@@ -3,10 +3,11 @@ Plugin module loader
 """
 # pylint: disable=R0903
 
-import imp
+import imp # pylint: disable=deprecated-module
 import os
 import logging
-from config_helper import get_boolean_or_default
+
+from AppConfig import AppConfig
 
 
 class PluginLoader:
@@ -16,10 +17,10 @@ class PluginLoader:
 
     __MAIN_MODULE ='__init__' # The main module name to look for in the plugin folder
 
-    def __init__(self, allowed_plugins, plugins_folder: str):
+    def __init__(self, config: AppConfig, allowed_plugins, plugins_folder: str):
         self.__logger = logging.getLogger('pluginloader')
         self.__logger.debug("Loading Plugins from %s....", plugins_folder)
-
+        self.__config = config
         self.inputs = []
         self.outputs = []
         possibleplugins = os.listdir(plugins_folder)
@@ -35,14 +36,14 @@ class PluginLoader:
             self.__logger.debug("Plugin: %s", plugin)
             if (len(list(allowed_plugins)) == 0) or (plugin.lower() in allowed_plugins_dict):
                 section_name = allowed_plugins_dict[plugin.lower()]
-                disabled = get_boolean_or_default(section_name, 'disabled', False)
+                disabled = config.get_boolean_or_default(section_name, 'disabled', False)
                 if disabled:
                     self.__logger.debug("%s specifically disabled in config", section_name)
                     continue
                 info = imp.find_module(PluginLoader.__MAIN_MODULE, [location])
                 plugin_module = imp.load_module(PluginLoader.__MAIN_MODULE, *info)
                 self.__logger.info("Plugin: %s loaded", section_name)
-                if plugin_module.plugin_type=="output":
+                if plugin_module.Plugin(self.__config).plugin_type=="output":
                     self.outputs.append({"name": plugin, "info": info})
                 else:
                     self.inputs.append({"name": plugin, "info": info})
@@ -55,4 +56,4 @@ class PluginLoader:
         Loads and returns a plugin module
         """
         self.__logger.debug("load(%s)", plugin['name'])
-        return imp.load_module(PluginLoader.__MAIN_MODULE, *plugin["info"])
+        return imp.load_module(PluginLoader.__MAIN_MODULE, *plugin["info"]).Plugin(self.__config)

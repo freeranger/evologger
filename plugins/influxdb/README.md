@@ -6,12 +6,12 @@ Writes the temperatures to an [InfluxDB 1.x](https://www.influxdata.com) databas
 * An InfluxDB 1.x instance you can access
 * An Influx database to store the temperature data in
 * An Influx username, and password with write access to same
-* The Influx python client installed on the same machine:  
+* The Influx python client installed on the same machine:
 
   `pip install influxdb`
 
   or, to upgrade your existing one:
-  
+
   `pip install influxdb --upgrade`
 
 ## config.ini settings
@@ -26,7 +26,7 @@ password=<Password for the user>
 
 ## [Grafana](https://grafana.net)
 [Grafana](https://grafana.net) is a visualisation tool which can read data from an Influx database (others are available)
-The installation process for [Grafana](https://grafana.net) is described here [here](http://docs.grafana.org/installation/). 
+The installation process for [Grafana](https://grafana.net) is described here [here](http://docs.grafana.org/installation/).
 Once you have installed [Grafana](https://grafana.net) you can create a dashboard to show all your evohome temperatures, e.g.
 
 1. Add your influx database to grafana: http://docs.grafana.org/datasources/influxdb/
@@ -43,6 +43,8 @@ Once you have installed [Grafana](https://grafana.net) you can create a dashboar
 
 
 ## Changelog
+### 3.0.0 (2022-02-06)
+- Rewritten to use the new plugin model
 ### 2.0.0 (2021-12-28)
 - Upgraded to Python 3.9
 - Additional logging and bug fixes
