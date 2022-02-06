@@ -6,6 +6,7 @@
 .pytest_cache
 .dockerignore
 Dockerfile
+pytest.ini
 **/__pycache__
 tests
 *.log
