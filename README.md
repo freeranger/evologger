@@ -104,7 +104,6 @@ There are a few rules you must follow for your plugin:
 * An output plugin must implement the `_write_temperatures` method which takes these parameters:
     * timestamp - the time in UTC when the temperature readings were taken
     * temperatures - an array of Temperature object, with the same format as emitted by the input plugins
-    And returns a text string representation of the temperature data written
 
 
 ## Limitations
