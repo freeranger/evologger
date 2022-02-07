@@ -10,3 +10,9 @@ ignore-patterns=^.*\.ini,
 
 [MESSAGES CONTROL]
 disable=C0103,C0301,W0703,W1203,too-few-public-methods
+
+[SIMILARITIES]
+min-similarity-lines=8
+ignore-comments=yes
+ignore-docstrings=yes
+ignore-imports=yes

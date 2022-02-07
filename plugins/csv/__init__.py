@@ -1,7 +1,7 @@
 """
 CSV file output plugin
 """
-# pylint: disable=E1101,R1732,W0406
+# pylint: disable=no-member
 
 import csv
 import os.path
@@ -25,44 +25,40 @@ class Plugin(OutputPluginBase):
         csv_file = None
         writer = None
 
-        csv_write_headers = not self._simulation and not os.path.isfile(self._filename)
+        try:
+            csv_write_headers = not self._simulation and not os.path.isfile(self._filename)
 
-        if not self._simulation:
-            try:
-                csv_file = open(self._filename, 'a', encoding='UTF-8')
-            except Exception as e:
-                self._logger.exception(f'Error opening {self._filename} for writing - aborting write\n{e}')
-                return ''
+            if not self._simulation:
+                try:
+                    # pylint: disable=consider-using-with
+                    csv_file = open(self._filename, 'a', encoding='UTF-8')
+                except Exception as e:
+                    self._logger.exception(f'Error opening {self._filename} for writing - aborting write\n{e}')
 
-            writer = csv.writer(csv_file, delimiter=',', quoting=csv.QUOTE_MINIMAL)
+                writer = csv.writer(csv_file, delimiter=',', quoting=csv.QUOTE_MINIMAL)
 
-        if not self._simulation and csv_write_headers:
+            if not self._simulation and csv_write_headers:
 
-            self._logger.debug(f'Creating {self._filename}')
+                self._logger.debug(f'Creating {self._filename}')
 
-            fieldnames = ['Time']
-            for t in temperatures:
-                if t.target is not None:
-                    fieldnames.append(t.zone + ' [A]')
-                    fieldnames.append(t.zone + ' [T]')
-                else:
-                    fieldnames.append(t.zone)
+                fieldnames = ['Time']
+                for t in temperatures:
+                    if t.target is not None:
+                        fieldnames.append(t.zone + ' [A]')
+                        fieldnames.append(t.zone + ' [T]')
+                    else:
+                        fieldnames.append(t.zone)
 
-            writer.writerow(fieldnames)
+                writer.writerow(fieldnames)
 
-        text_temperatures = ''
-        row = [timestamp]
-        for temperature in temperatures:
-            row.append(temperature.actual)
-            text_temperatures += f'{temperature.zone} ({temperature.actual} A'
+            row = [timestamp]
+            for temperature in temperatures:
+                row.append(temperature.actual)
 
-            if temperature.target is not None:
-                row.append(temperature.target)
-                text_temperatures += f', {temperature.target} T'
-            text_temperatures += ') '
+                if temperature.target is not None:
+                    row.append(temperature.target)
 
-        if self._simulation is False:
-            writer.writerow(row)
-            csv_file.close()
-
-        return text_temperatures
+        finally:
+            if self._simulation is False and writer is not None:
+                writer.writerow(row)
+                csv_file.close()

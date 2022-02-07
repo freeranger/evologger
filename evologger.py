@@ -4,7 +4,7 @@
 EvoHome loging application
 Reads temperatures from configured input plugins and writes them to configured output plugins
 """
-# pylint: disable=R0912,R0915,W0603
+# pylint: disable=global-statement
 
 from datetime import datetime
 import getopt

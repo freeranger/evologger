@@ -85,10 +85,8 @@ class OutputPluginBase(PluginBase):
 
     @abstractmethod
     def _write_temperatures(self, timestamp, temperatures) -> str:
-        """Implementations-specific temperature writer
-
-        Returns:
-            string representation of the temperatures
+        """
+        Implementations-specific temperature writer
         """
 
     def write(self, timestamp, temperatures):
@@ -105,12 +103,6 @@ class OutputPluginBase(PluginBase):
         self._logger.debug(debug_message)
 
         try:
-            temperatures = self._write_temperatures(timestamp, temperatures)
-
-            if  self._simulation:
-                self._logger.info(f"[SIMULATED] {temperatures}")
-            else:
-                self._logger.debug(temperatures)
-
+            self._write_temperatures(timestamp, temperatures)
         except Exception:
             self._logger.exception('Error writing temperatures, aborting write')

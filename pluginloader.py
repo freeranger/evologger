@@ -1,7 +1,6 @@
 """
 Plugin module loader
 """
-# pylint: disable=R0903
 
 import imp # pylint: disable=deprecated-module
 import os

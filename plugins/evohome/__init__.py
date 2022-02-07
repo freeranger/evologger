@@ -1,7 +1,7 @@
 """
 Evohome input plugin - for getting all your zone and DHW temperatures
 """
-# pylint: disable=R0913,W0212
+# pylint: disable=too-many-arguments,protected-access
 
 from datetime import datetime
 import json
@@ -204,8 +204,7 @@ class Plugin(InputPluginBase):
             temperatures = [Temperature("Lounge", round(random.uniform(12.0, 28.0), 1), 22.0),
                             Temperature("Master Bedroom", round(random.uniform(18.0, 25.0), 1), 12.0),
                             Temperature(self._hotwater, round(random.uniform(40, 65), 1))]
-            text_temperatures = f'[SIMULATED] {temperatures[0].zone} ({temperatures[0].actual} A) ({temperatures[0].target} T) {temperatures[1].zone} ({temperatures[1].actual} A) ({temperatures[1].target} T) {temperatures[2].zone} ({temperatures[2].actual} A)'
-            self._logger.info(text_temperatures)
+            text_temperatures = '{temperatures[0].zone} ({temperatures[0].actual} A) ({temperatures[0].target} T) {temperatures[1].zone} ({temperatures[1].actual} A) ({temperatures[1].target} T) {temperatures[2].zone} ({temperatures[2].actual} A)'
 
             return (temperatures, text_temperatures)
 

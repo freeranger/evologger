@@ -32,5 +32,3 @@ class Plugin(OutputPluginBase):
 
         if self._simulation is False:
             print (text_temperatures)
-
-        return text_temperatures

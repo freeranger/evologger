@@ -1,4 +1,4 @@
-# pylint: disable=C0114,R0903
+"""Temperature module"""
 
 class Temperature:
     """

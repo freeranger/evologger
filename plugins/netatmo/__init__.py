@@ -1,7 +1,7 @@
 """
 Netatmo input plugin - for getting the outside temperature
 """
-# pylint: disable=W0212
+# pylint: disable=protected-access,too-few-public-methods,too-many-instance-attributes
 
 from datetime import datetime,timedelta
 import io
@@ -42,14 +42,12 @@ def _post_request(url: str, request_params, logger):
             logger.exception(f'Error at {full_url}\nError:{e}')
         return None
 
-# pylint: disable=R0903
 class ModuleNotFound(Exception):
     """
     Exception thrown when the configured station/module is not found in the response from the API
     """
 
 
-# pylint: disable=R0902
 class Authenticate:
     """
     Manages Netatmo authentication tokens

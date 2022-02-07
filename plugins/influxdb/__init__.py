@@ -1,9 +1,7 @@
 """
 InfluxDB v1.x input plugin
 """
-# pylint: disable=W0406
 
-import sys
 import urllib.parse
 from influxdb import InfluxDBClient
 
@@ -69,7 +67,6 @@ class Plugin(OutputPluginBase):
 
         influx_client = InfluxDBClient(self._hostname, self._port, self._username, self._password, self._database)
 
-        text_temperatures = ''
         data = []
         for temperature in temperatures:
 
@@ -82,14 +79,8 @@ class Plugin(OutputPluginBase):
             if record_delta:
                 data.append(record_delta)
 
-            text_temperatures += f'{temperature.zone} ({temperature.actual} A'
-            if temperature.target is not None:
-                text_temperatures += f', {temperature.target} T'
-            text_temperatures += ') '
-
         try:
             if self._simulation is False:
-                self._logger.debug(text_temperatures)
                 self._logger.debug('Writing all zone measurements to influx...')
                 influx_client.write_points(data)
         except Exception as e:
@@ -97,4 +88,3 @@ class Plugin(OutputPluginBase):
                 self._logger.exception(f'Error Writing to {self._database} at {self._hostname}:{self._port} - aborting write.\nRequest: {e.request.method} {urllib.parse.unquote(e.request.url)}\nBody: {e.request.body}.\nResponse: {e.response}\nError:{e}')
             else:
                 self._logger.exception(f'Error Writing to {self._database} at {self._hostname}:{self._port} - aborting write\nError:{e}')
-        return text_temperatures

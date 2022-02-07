@@ -62,7 +62,6 @@ class Plugin(OutputPluginBase):
         influx_client = InfluxDBClient(url=f'{self._hostname}:{self._port}', token=self._apikey, org=self._org)
         write_api = influx_client.write_api(write_options=SYNCHRONOUS)
 
-        text_temperatures = ''
         data = []
         for temperature in temperatures:
 
@@ -75,14 +74,8 @@ class Plugin(OutputPluginBase):
             if record_delta:
                 data.append(record_delta)
 
-            text_temperatures += f'{temperature.zone} ({temperature.actual} A'
-            if temperature.target is not None:
-                text_temperatures += f', {temperature.target} T'
-            text_temperatures += ') '
-
         try:
             if self._simulation is False:
-                self._logger.debug(text_temperatures)
                 self._logger.debug('Writing all zone measurements to influx...')
                 write_api.write(bucket=self._bucket, record=data)
         except Exception as e:
@@ -91,7 +84,5 @@ class Plugin(OutputPluginBase):
                     self._logger.exception(f'Insufficient write permissions to Bucket: "{self._bucket}" - aborting write\nError:{e}')
                 else:
                     self._logger.exception(f'Error Writing to {self._bucket} at {self._hostname}:{self._port} - aborting write.\nResponse: {e.body.json()}\nError:{e}')
-                return text_temperatures
-            self._logger.exception(f'Error Writing to {self._bucket} at {self._hostname}:{self._port} - aborting write\nError:{e}')
-
-        return text_temperatures
+            else:
+                self._logger.exception(f'Error Writing to {self._bucket} at {self._hostname}:{self._port} - aborting write\nError:{e}')
