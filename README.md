@@ -19,7 +19,7 @@ Destinations include "data stores" such as .csv files or influxdb database for f
       - See below to run in Docker
 
 ## Running in Docker
-A Docker image is available that you can download and run `docker pull freeranger/evologger`
+A [Docker image](https://hub.docker.com/repository/docker/freeranger/evologger) is available that you can download and run `docker pull freeranger/evologger:latest`
 You will need to map your own configuration file into the container as the built in one is not configured.
 You may also for example map a volume/file for csv output rather than storing in the container volume.
 
